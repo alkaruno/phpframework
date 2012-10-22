@@ -7,11 +7,6 @@ class Scaffold
     private $fieldsByType = array();
     private $views;
 
-    function __construct()
-    {
-        Dispatcher::loadConfig('scaffold');
-    }
-
     /**
      * @param $data имя файла с json данными или массив
      * @return array
@@ -102,7 +97,7 @@ class Scaffold
                 }
                 $page->setContent($pageContent);
 
-                return array(Dispatcher::$config['scaffold']['views']['list'], array('data' => $data, 'page' => $page));
+                return array($this->views['list'], array('data' => $data, 'page' => $page));
             }
 
             if ($id != null) {
@@ -118,7 +113,7 @@ class Scaffold
             $editors[$fieldName] = $field->getEditHtml($fieldName, $field->getValue($fieldName, isset($_POST[$fieldName]) ? $_POST[$fieldName] : '', $fieldData), $fieldData);
         }
 
-        return array(Dispatcher::$config['scaffold']['views']['form'], array('data' => $data, '_editors' => $editors, 'errors' => $errors));
+        return array($this->views['form'], array('data' => $data, '_editors' => $editors, 'errors' => $errors));
     }
 
     /**
@@ -135,6 +130,11 @@ class Scaffold
         }
 
         return $this->fieldsByType[$fieldType];
+    }
+
+    public function setViews($views)
+    {
+        $this->views = $views;
     }
 }
 
