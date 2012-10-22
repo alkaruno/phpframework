@@ -3,6 +3,7 @@
 class Scaffold
 {
     const IMAGE_FIELD_TYPE = 'image';
+    const DEFAULT_LIST_SIZE = 25;
 
     private $fieldsByType = array();
     private $views;
@@ -83,7 +84,7 @@ class Scaffold
                 if (isset($data['list']['order'])) {
                     $sql .= ' ORDER BY ' . $data['list']['order'];
                 }
-                $size = isset($data['list']['size']) ? $data['list']['size'] : 25;
+                $size = isset($data['list']['size']) ? $data['list']['size'] : self::DEFAULT_LIST_SIZE;
                 $page = new SqlPage($sql, array(), isset($_GET['page']) ? $_GET['page'] : 1, $size);
 
                 $pageContent = $page->getContent();
