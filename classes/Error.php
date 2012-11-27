@@ -25,17 +25,27 @@ class Error
         }
 
         $errors = array(
-            404 => 'HTTP/1.1 404 Not Found',
-            500 => 'HTTP/1.1 Internal Server Error'
+            404 => '404 Not Found',
+            500 => 'Internal Server Error'
         );
 
-        if (isset($errors[$code]) && !headers_sent()) {
-            header(isset($errors[$code]) ? $errors[$code] : '', true, $code);
+        $title = isset($errors[$code]) ? $errors[$code] : null;
+
+        if ($title !== null && !headers_sent()) {
+            header('HTTP/1.1 ' . isset($errors[$code]) ? $errors[$code] : '', true, $code);
         }
 
         $message = sprintf('%s %s %s:%s<pre>%s</pre>', $code, $text, $file, $line, $info);
-        Dispatcher::showView('error.tpl', array('code' => $code, 'message' => $message, 'debug' => isset(Dispatcher::$config['env']['debug']) && Dispatcher::$config['env']['debug']));
+        $data = array('code' => $code, 'title' => $title, 'message' => $message, 'debug' => isset(Dispatcher::$config['env']['debug']) && Dispatcher::$config['env']['debug']);
+
         Logger::log($message, 'error');
+
+        if (is_readable('../app/views/error.tpl')) {
+            Dispatcher::showView('error.tpl', array('code' => $code, 'message' => $message, 'debug' => isset(Dispatcher::$config['env']['debug']) && Dispatcher::$config['env']['debug']));
+        } else {
+            extract($data);
+            include FRAMEWORK_HOME . '/views/error.php';
+        }
 
         exit;
     }

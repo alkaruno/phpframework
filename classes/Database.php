@@ -151,7 +151,7 @@ class Database
         $this->time += $time;
 
         if (count($this->logs) < self::LOG_LIMIT) {
-            $this->logs[] = array($sql . ' ' . print_r($values, true), $time);
+            $this->logs[] = array($sql, $values, $time);
         }
 
         return $statement;
@@ -211,5 +211,10 @@ class Database
             $ids[] = $row[$id];
         }
         return implode($separator, $ids);
+    }
+
+    public function getLogs()
+    {
+        return $this->logs;
     }
 }
