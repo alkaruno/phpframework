@@ -11,10 +11,11 @@ class Dispatcher
         //set_error_handler('Error::handle', E_ERROR | E_WARNING);
         set_exception_handler('Error::handle');
 
-        self::loadConfig('app');
+        self::loadConfig('app'); // может стоит мерджить эти два конфига?
         self::loadConfig('env');
 
         $request = new Request();
+        $GLOBALS['app']['request'] = $request;
 
         if (isset(self::$config['app']['filters'])) {
             foreach (self::$config['app']['filters'] as $filter) {

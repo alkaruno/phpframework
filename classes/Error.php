@@ -25,23 +25,37 @@ class Error
         }
 
         $errors = array(
-            404 => '404 Not Found',
+            401 => 'Unauthorized',
+            403 => 'Forbidden',
+            404 => 'Not Found',
             500 => 'Internal Server Error'
         );
 
-        $title = isset($errors[$code]) ? $errors[$code] : null;
+        if (!isset($errors[$code])) {
+            $code = 500;
+        }
 
-        if ($title !== null && !headers_sent()) {
+        if (!headers_sent()) {
             header('HTTP/1.1 ' . isset($errors[$code]) ? $errors[$code] : '', true, $code);
         }
 
         $message = sprintf('%s %s %s:%s<pre>%s</pre>', $code, $text, $file, $line, $info);
-        $data = array('code' => $code, 'title' => $title, 'message' => $message, 'debug' => isset(Dispatcher::$config['env']['debug']) && Dispatcher::$config['env']['debug']);
+        $data = array(
+            'code' => $code,
+            'title' => $errors[$code],
+            'message' => $message,
+            'debug' => isset(Dispatcher::$config['env']['debug']) && Dispatcher::$config['env']['debug']
+        );
 
         Logger::log($message, 'error');
 
-        if (is_readable('../app/views/error.tpl')) {
-            Dispatcher::showView('error.tpl', array('code' => $code, 'message' => $message, 'debug' => isset(Dispatcher::$config['env']['debug']) && Dispatcher::$config['env']['debug']));
+        if (isset(Dispatcher::$config['app']['errorView']) && is_readable('../app/views/' . Dispatcher::$config['app']['errorView'])) {
+            /** @var $request Request */
+            $request = $GLOBALS['app']['request'];
+            foreach ($data as $key => $value) {
+                $request->set($key, $value);
+            }
+            Dispatcher::showView(Dispatcher::$config['app']['errorView'], $request->getData());
         } else {
             extract($data);
             include FRAMEWORK_HOME . '/views/error.php';
