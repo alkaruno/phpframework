@@ -17,7 +17,15 @@ abstract class Controller
         $this->request->set($name, $value);
     }
 
-    abstract public function handle();
+    protected function redirect($url)
+    {
+        header('Location: ' . $url);
+        exit;
+    }
+
+    public function handle() {
+        ;
+    }
 
     protected function loadModule($module)
     {

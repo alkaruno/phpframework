@@ -138,7 +138,7 @@ class Validator
     {
         $id = isset($data['id']) ? $data['id'] : null;
 
-        return Database::instance()->getValue('SELECT COUNT(1) FROM `' . $params[0] . '` WHERE ' . ($id !== null ? ' id != ' . $id . ' AND ' : '') . ' `' . $params[1] . '` = ?', $value) == 0;
+        return Db::getValue('SELECT COUNT(1) FROM `' . $params[0] . '` WHERE ' . ($id !== null ? ' id != ' . $id . ' AND ' : '') . ' `' . $params[1] . '` = ?', $value) == 0;
     }
 
     private function validateConfirm($value, $params, $data)

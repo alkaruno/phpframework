@@ -20,10 +20,16 @@ class Logger
             mkdir(dirname($filename), 0777, true);
         }
 
-        $message = date('Y:m:d H:i:s') . ' ' . str_pad('[' . strtoupper($level) . ']', 7) . ' ' . $message;
+        $message = date('Y.m.d H:i:s') . ' ' . str_pad('[' . strtoupper($level) . ']', 7) . ' ' . $message; // TODO заменить на sprintf
         file_put_contents($filename, $message . PHP_EOL, FILE_APPEND);
     }
 
+    /**
+     * TODO хоть и лаконично, но не очень хорошо, потому как нет автокомлита и можно ошибиться в написании метода
+     *
+     * @param $name
+     * @param $arguments
+     */
     function __call($name, $arguments)
     {
         if (in_array($name, self::$levels) && count($arguments) == 1) {

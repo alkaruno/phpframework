@@ -12,7 +12,7 @@ class Entity
      */
     public static function getRow($table, $id)
     {
-        return Database::instance()->getRow('SELECT * FROM `' . $table . '` WHERE id = ?', $id);
+        return Db::getRow('SELECT * FROM `' . $table . '` WHERE id = ?', $id);
     }
 
     public static function getRows($table, $where = null, $order = null, $from = null, $count = null)
@@ -36,7 +36,7 @@ class Entity
             }
         }
 
-        return Database::instance()->getRows(implode(' ', $arr));
+        return Db::getRows(implode(' ', $arr));
     }
 
     /**
@@ -50,13 +50,11 @@ class Entity
      */
     public static function save($table, $data, $idColumn = 'id')
     {
-        $db = Database::instance();
-
-        if (isset($data[$idColumn]) && $db->getValue('SELECT COUNT(1) FROM `' . $table . '` WHERE `' . $idColumn . '` = ?', $data[$idColumn]) > 0) {
-            $db->update('UPDATE `' . $table . '` SET ' . self::getFieldsSql($data, $idColumn) . ' WHERE `' . $idColumn . '` = :' . $idColumn, $data);
+        if (isset($data[$idColumn]) && Db::getValue('SELECT COUNT(1) FROM `' . $table . '` WHERE `' . $idColumn . '` = ?', $data[$idColumn]) > 0) {
+            Db::update('UPDATE `' . $table . '` SET ' . self::getFieldsSql($data, $idColumn) . ' WHERE `' . $idColumn . '` = :' . $idColumn, $data);
             $id = $data[$idColumn];
         } else {
-            $id = $db->insert('INSERT `' . $table . '` SET ' . self::getFieldsSql($data), $data);
+            $id = Db::insert('INSERT `' . $table . '` SET ' . self::getFieldsSql($data), $data);
         }
 
         return $id;
@@ -64,7 +62,7 @@ class Entity
 
     public static function delete($table, $id)
     {
-        return Database::instance()->update('DELETE FROM `' . $table . '` WHERE id = ?', $id);
+        return Db::update('DELETE FROM `' . $table . '` WHERE id = ?', $id);
     }
 
     private static function getFieldsSql($data, $idColumn = null)

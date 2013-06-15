@@ -16,7 +16,7 @@ class Database
         $config = Dispatcher::$config['env']['db'];
 
         $this->connection = new PDO($config['dsn'], $config['username'], $config['password']);
-        $this->connection->exec('SET NAMES ' . (isset($config['encoding']) ? $config['encoding'] : 'utf8'));
+        $this->connection->exec('SET NAMES ' . (isset($config['charset']) ? $config['charset'] : 'utf8'));
 
         return $this;
     }

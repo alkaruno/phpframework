@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @deprecated
+ */
 class AdminListController extends Controller
 {
     private $rowsOnPage = 25;
@@ -22,7 +25,7 @@ class AdminListController extends Controller
         if ($this->request->getMethod() == 'POST') {
 
             if ($id != null && isset($_POST['_delete'])) {
-                EntityModel::delete($this->tableName, $id);
+                Entity::delete($this->tableName, $id);
                 return 'redirect:' . $this->listUrl;
             }
 
@@ -34,7 +37,7 @@ class AdminListController extends Controller
             if ($this->validator->validate()) {
                 $data = $this->validator->getData();
                 $this->postProcess($data);
-                $id = EntityModel::save($this->tableName, $data);
+                $id = Entity::save($this->tableName, $data);
                 $this->processImages($id);
                 return 'redirect:' . $this->listUrl;
             } else {
@@ -46,7 +49,7 @@ class AdminListController extends Controller
         } else {
 
             if ($id != null) {
-                $data = EntityModel::getRow($this->tableName, $id);
+                $data = Entity::getRow($this->tableName, $id);
                 $this->preProcess($data);
                 $_POST = $data;
                 return array($this->editView, array('id' => $id));
@@ -55,7 +58,7 @@ class AdminListController extends Controller
             } else {
                 $page = isset($_GET['page']) ? $_GET['page'] : 1;
                 return array($this->listView, array(
-                    'pagination' => new SqlPagination('SELECT * FROM `' . $this->tableName . '`', array(), $page, $this->rowsOnPage)
+                    'pagination' => new SqlPage('SELECT * FROM `' . $this->tableName . '`', array(), $page, $this->rowsOnPage)
                 ));
             }
 

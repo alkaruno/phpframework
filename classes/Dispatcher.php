@@ -8,11 +8,15 @@ class Dispatcher
 
     function __construct()
     {
-        //set_error_handler('Error::handle', E_ERROR | E_WARNING);
-        set_exception_handler('Error::handle');
+        //set_error_handler('Error::handle', E_ERROR | E_WARNING); // TODO
+        //set_exception_handler('Error::handle');
 
-        self::loadConfig('app'); // может стоит мерджить эти два конфига?
-        self::loadConfig('env');
+        $appConfig = include('../app/config/app.php');
+        $envConfig = include('../app/config/env.php');
+        self::$config = array_merge_recursive($appConfig, $envConfig);
+
+        self::loadConfig('app'); // @deprecated
+        self::loadConfig('env'); // @deprecated
 
         $request = new Request();
         $GLOBALS['app']['request'] = $request;
@@ -29,6 +33,10 @@ class Dispatcher
         }
 
         list($controller, $method, $params) = $this->getHandlerAndParams($request->getUri());
+
+        if (substr($controller, -10) !== 'Controller') {
+            $controller .= 'Controller';
+        }
 
         require '../app/controllers/' . $controller . '.php';
         $arr = explode('/', $controller);
@@ -95,20 +103,21 @@ class Dispatcher
      */
     public static function showView($view, $data = array())
     {
+        $path = isset(Dispatcher::$config['views_path']) ? Dispatcher::$config['views_path'] : '../app/views';
         $info = pathinfo($view);
 
         switch ($info['extension']) {
 
             case 'php':
                 extract($data);
-                include '../app/views/' . $view;
+                include $path . '/' . $view;
                 break;
 
             case 'tpl':
                 if (self::$smarty == null) {
                     require FRAMEWORK_HOME . '/lib/smarty/Smarty.class.php';
                     self::$smarty = new Smarty();
-                    self::$smarty->setTemplateDir('../app/views');
+                    self::$smarty->setTemplateDir($path);
                     self::$smarty->setCompileDir('../app/cache/views');
                     self::$smarty->addPluginsDir(FRAMEWORK_HOME . '/smarty');
                     self::$smarty->addPluginsDir('../app/helpers/smarty');
@@ -121,7 +130,7 @@ class Dispatcher
             case 'twig':
                 require FRAMEWORK_HOME . '/lib/Twig/Autoloader.php';
                 Twig_Autoloader::register();
-                $loader = new Twig_Loader_Filesystem('../app/views');
+                $loader = new Twig_Loader_Filesystem($path);
                 $twig = new Twig_Environment($loader, array(
                     'cache' => '../app/cache/views',
                     'autoescape' => false,

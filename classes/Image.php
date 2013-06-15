@@ -9,7 +9,7 @@ class Image
     private $filename;
     private $width;
     private $height;
-    private $quality = 75;
+    private $quality = 85;
     private $thumbnail = false;
     private $crop = false;
 

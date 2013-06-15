@@ -42,7 +42,7 @@ class Request
 
     public function addError($field, $error)
     {
-        $GLOBALS['app']['errors'][$field] = $error;
+        $GLOBALS['app']['errors'][$field] = $error; // TODO некрасиво надо складывать в реквест по хитрому полю
     }
 
     public function addErrors($errors)
