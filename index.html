@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="phpframework : Велосипед собственной сборки для быстрого создания веб-приложений. PHP &gt;= 5.2" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>phpframework</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/alkaruno/phpframework">View on GitHub</a>
+
+          <h1 id="project_title">phpframework</h1>
+          <h2 id="project_tagline">Велосипед собственной сборки для быстрого создания веб-приложений. PHP &gt;= 5.2</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/alkaruno/phpframework/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/alkaruno/phpframework/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h2>
+<a name="-" class="anchor" href="#-"><span class="octicon octicon-link"></span></a>Структура проекта</h2>
+
+<pre><code>app
+    config
+        app.php
+        env.php
+    controllers
+    models
+    views
+public
+    css
+    im
+    js
+    .htaccess
+    index.php
+</code></pre>
+
+<p>Для Apache <em>.htaccess</em> выглядит приблизительно следующим образом:</p>
+
+<pre><code>AddDefaultCharset UTF-8
+
+Options +FollowSymLinks +ExecCGI
+
+php_flag    display_errors          on
+php_flag    display_startup_errors  on
+php_value   error_reporting         2047
+php_flag    magic_quotes_gpc        off
+
+&lt;IfModule mod_rewrite.c&gt;
+
+  RewriteEngine On
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^(.*)$ index.php [QSA,L]
+
+&lt;/IfModule&gt;
+</code></pre>
+
+<p><em>index.php</em></p>
+
+<pre><code>&lt;?php
+
+require '../../phpframework/autoload.php';
+new Dispatcher();
+</code></pre>
+
+<p>Конфигурационные настройки хранятся в папке <code>config</code>. <code>env.php</code> содержит настройки, привязанные к конкретному окружению (настройки БД и пр.), <code>app.php</code> содержит общие настройки приложения.</p>
+
+<p>Каждый конфигурационный файл должен возвращать массив настроек. Например:</p>
+
+<pre><code>&lt;?php
+
+return array(
+    'db' =&gt; array(
+        'dsn' =&gt; 'mysql:dbname=dbname;host=localhost;charset=utf8',
+        'username' =&gt; 'root',
+        'password' =&gt; 'password'
+    )
+);
+</code></pre>
+
+<h2>
+<a name="" class="anchor" href="#"><span class="octicon octicon-link"></span></a>Роутинг</h2>
+
+<p>Для этого в конфигурационном файле <code>app.php</code> описываются правила. Например:</p>
+
+<pre><code>&lt;?php
+
+return array(
+    'routes' =&gt; array(
+        array('^/$', 'HomeController'),
+        array('^/profile', 'ProfileController')
+    )
+);
+</code></pre>
+
+<p>Во втором случае на контроллер переправляются все запросы, которые начинаются на <code>/account</code>. Дополнительный роутинг может осуществляться в самом контроллере <code>AccountController</code>.</p>
+
+<h2>
+<a name="-1" class="anchor" href="#-1"><span class="octicon octicon-link"></span></a>Контроллеры</h2>
+
+<p>В фреймворке имеется базовый класс <code>Controller</code>, с абстрактым методом <code>abstract public function handle();</code>. Названия классов контроллеров должны заканчиваться на <code>Controller</code>.</p>
+
+<pre><code>&lt;?php
+
+class HomeController extends Controller
+{
+    public function handle()
+    {
+        $this-&gt;request-&gt;set('user', 'Вася Пупкин');
+
+        return 'profile.php'; // для PHP представлений
+
+        return 'profile.tpl'; // для Smarty представлений
+
+        return array('profile.tpl', 'user', 'Вася Пупкин'); // для передачи в представление одной переменной
+
+        return array('profile.tpl', array(
+            'user' =&gt; 'Вася Пупкин',
+            'city' =&gt; 'Дефолт сити'
+        )); // для передачи в представление массива переменных
+
+        return 'redirect:/success'; // для редиректа на другой URL
+    }
+}
+</code></pre>
+
+<p>Также имеется контроллер с дополнительным роутингом внутри <code>RouterController</code> с абстрактным методом <code>abstract protected function getRoutes();</code>. Роутинговые правила задаются аналогично правилам в <code>app.php</code>, только вместо имен контроллеров задаются имена методов.</p>
+
+<pre><code>class ProfileController extends RouterController
+{
+    protected function getRoutes()
+    {
+        return array(
+            array('^/profile', 'index'),
+            array('^/profile/(\d+)$', 'details')
+        );
+    }
+
+    public function index()
+    {
+        return array('profile/index.tpl', ProfileModel::getAll());
+    }
+
+    public function details($id)
+    {
+        return array('profile/details.tpl', ProfileModel::get($id));
+    }
+}
+</code></pre>
+
+<h2>
+<a name="----" class="anchor" href="#----"><span class="octicon octicon-link"></span></a>Модели и работа с БД</h2>
+
+<p>Имя класса модели должно заканчиваться на <code>Model</code>. Для работы с БД имеется класс <code>Db</code> со следующими методами:</p>
+
+<pre><code>public static function query($sql, $values = null);
+
+public static function getValue($sql, $values = null);
+
+public static function getRow($sql, $values = null);
+
+public static function getRows($sql, $values = null);
+
+public static function getPairs($sql, $values = null, $keyColumn = 'id', $valueColumn = 'name');
+
+public static function update($sql, $values = null);
+
+public static function insert($sql, $values = null);
+
+public static function begin();
+
+public static function commit();
+
+public static function rollback();
+
+public static function getLogs();
+</code></pre>
+
+<p>Все методы, кроме <code>getPairs</code> могут вызываться следующими образами:</p>
+
+<pre><code>&lt;?php
+
+$user = Db::getRow('SELECT * FROM user WHERE id = ?', 5);
+
+$users = Db::getRows('SELECT * FROM user WHERE age BETWEEN ? AND ?', array(21, 35));
+
+или
+
+$users = Db::getRows('SELECT * FROM user WHERE age BETWEEN ? AND ?', 21, 35);
+
+или
+
+$users = Db::getRows('SELECT * FROM user WHERE age BETWEEN :from AND :to', array('from' =&gt; 21, 'to' =&gt; 35));
+</code></pre>
+
+<p>Для простых запросов к таблицам есть класс <code>Entity</code> с методами:</p>
+
+<pre><code>public static function getRow($table, $id);
+
+public static function getRows($table, $where = null, $order = null, $from = null, $count = null);
+
+public static function save($table, $data, $idColumn = 'id');
+
+public static function delete($table, $id);
+</code></pre>
+
+<p>Примеры использования:</p>
+
+<pre><code>$user = Entity::getRow('user', 5); // равносильно $user = Db::getRow('SELECT * FROM user WHERE id = ?', 5);
+
+$id = Entity::save('user', array('first_name' =&gt; 'Вася', 'last_name' =&gt; 'Пупкин'));
+
+// равносильно
+$id = Db::insert('INSERT user SET first_name = :first_name, last_name = :last_name', array('first_name' =&gt; 'Вася', 'last_name' =&gt; 'Пупкин'));
+</code></pre>
+
+<p>Если в метод save передать в значениях id, то происходит UPDATE записи.</p>
+
+<h2>
+<a name="--" class="anchor" href="#--"><span class="octicon octicon-link"></span></a>Формы и валидация</h2>
+
+<p>Для валидации форм, а также любых других ассоциативных массивов, имеется класс <code>Validator</code>. Пример использования:</p>
+
+<pre><code>&lt;?php
+
+if ($this-&gt;request-&gt;getMethod() == 'POST') {
+
+    $validator = new Validator();
+    $validator-&gt;add('username')-&gt;required('Please, enter value');
+    $validator-&gt;add('password')-&gt;required('Please, enter value');
+
+    if ($validator-&gt;validate()) {
+        $data = $validator-&gt;getData(); // отвалидированные данные
+    } else {
+        $this-&gt;request-&gt;set('errors', $validator-&gt;getErrors()); // передача ошибок в представление
+    }
+}
+</code></pre>
+
+<h2>
+<a name="--1" class="anchor" href="#--1"><span class="octicon octicon-link"></span></a>Отправка почты</h2>
+
+<h2>
+<a name="---1" class="anchor" href="#---1"><span class="octicon octicon-link"></span></a>Работа с изображениями</h2>
+
+<h2>
+<a name="-2" class="anchor" href="#-2"><span class="octicon octicon-link"></span></a>Кеш</h2>
+
+<p>В процессе переписания кода.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">phpframework maintained by <a href="https://github.com/alkaruno">alkaruno</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
