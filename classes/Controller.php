@@ -26,10 +26,4 @@ abstract class Controller
     public function handle() {
         ;
     }
-
-    protected function loadModule($module)
-    {
-        //Dispatcher::loadConfig($module);
-        require_once '../app/lib/' . $module . '/_autoload.php';
-    }
 }

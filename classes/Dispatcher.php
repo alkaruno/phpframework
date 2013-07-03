@@ -8,21 +8,18 @@ class Dispatcher
 
     function __construct()
     {
-        //set_error_handler('Error::handle', E_ERROR | E_WARNING); // TODO
-        //set_exception_handler('Error::handle');
+        set_error_handler('Error::handle', E_ERROR | E_WARNING);
+        set_exception_handler('Error::handle');
 
         $appConfig = include('../app/config/app.php');
         $envConfig = include('../app/config/env.php');
         self::$config = array_merge_recursive($appConfig, $envConfig);
 
-        self::loadConfig('app'); // @deprecated
-        self::loadConfig('env'); // @deprecated
-
         $request = new Request();
         $GLOBALS['app']['request'] = $request;
 
-        if (isset(self::$config['app']['filters'])) {
-            foreach (self::$config['app']['filters'] as $filter) {
+        if (isset(self::$config['filters'])) {
+            foreach (self::$config['filters'] as $filter) {
                 require '../app/' . $filter . '.php';
                 /**
                  * @var Filter $filter
@@ -79,7 +76,7 @@ class Dispatcher
      */
     private function getHandlerAndParams($uri)
     {
-        list($handler, $params) = self::route($uri, self::$config['app']['routes']);
+        list($handler, $params) = self::route($uri, self::$config['routes']);
 
         $data = explode('.', $handler);
         if (count($data) == 2) {

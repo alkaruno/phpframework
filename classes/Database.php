@@ -17,7 +17,7 @@ class Database
 
     private function __construct()
     {
-        $config = Dispatcher::$config['env']['db'];
+        $config = Dispatcher::$config['db'];
 
         $this->connection = new PDO($config['dsn'], $config['username'], $config['password']);
         $this->connection->exec('SET NAMES ' . (isset($config['charset']) ? $config['charset'] : 'utf8'));
