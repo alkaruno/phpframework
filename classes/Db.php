@@ -12,6 +12,13 @@ class Db
 
     const LOG_LIMIT = 100; // количество запросов, которые помещаются в лог (чтобы не было переполнения памяти, если запросов очень и очень много)
 
+    public static function __init()
+    {
+        $config = Dispatcher::$config['db'];
+        self::$pdo = new PDO($config['dsn'], $config['username'], $config['password']);
+        self::$pdo->exec('SET NAMES ' . (isset($config['charset']) ? $config['charset'] : 'utf8'));
+    }
+
     public static function query($sql, $values = null)
     {
         $args = func_get_args();
@@ -110,12 +117,6 @@ class Db
 
     private static function internalQuery($sql, $values = null)
     {
-        if (self::$pdo == null) {
-            $config = Dispatcher::$config['db'];
-            self::$pdo = new PDO($config['dsn'], $config['username'], $config['password']);
-            self::$pdo->exec('SET NAMES ' . (isset($config['charset']) ? $config['charset'] : 'utf8'));
-        }
-
         if (!is_array($values)) {
             $values = array($values);
         }
@@ -159,3 +160,5 @@ class Db
         return $values;
     }
 }
+
+Db::__init();

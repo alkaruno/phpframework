@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Class Database
+ * @deprecated use Db instead
+ */
 class Database
 {
     private static $instance;
