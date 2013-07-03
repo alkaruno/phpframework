@@ -49,13 +49,13 @@ class Error
 
         Logger::log($message, 'error');
 
-        if (isset(Dispatcher::$config['app']['errorView']) && is_readable('../app/views/' . Dispatcher::$config['app']['errorView'])) {
+        if (isset(Dispatcher::$config['errorView']) && is_readable('../app/views/' . Dispatcher::$config['errorView'])) {
             /** @var $request Request */
             $request = $GLOBALS['app']['request'];
             foreach ($data as $key => $value) {
                 $request->set($key, $value);
             }
-            Dispatcher::showView(Dispatcher::$config['app']['errorView'], $request->getData());
+            Dispatcher::showView(Dispatcher::$config['errorView'], $request->getData());
         } else {
             extract($data);
             include FRAMEWORK_HOME . '/views/error.php';

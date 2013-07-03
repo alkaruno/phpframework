@@ -15,8 +15,8 @@ function phpFrameworkAutoload($class)
     } else if (file_exists(FRAMEWORK_HOME . '/classes/' . $class . '.php')) {
         require FRAMEWORK_HOME . '/classes/' . $class . '.php';
         return true;
-    } else if (isset(Dispatcher::$config['app']['autoload'][$class])) {
-        require '../app/' . Dispatcher::$config['app']['autoload'][$class] . $class . '.php';
+    } else if (isset(Dispatcher::$config['autoload'][$class])) {
+        require '../app/' . Dispatcher::$config['autoload'][$class] . $class . '.php';
         return true;
     }
 
