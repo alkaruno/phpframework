@@ -2,11 +2,52 @@
 
 class Logger
 {
-    private static $levels = array('trace', 'debug', 'info', 'warn', 'error', 'fatal');
+    const ALERT = 'alert';
+    const CRITICAL = 'critical';
+    const ERROR = 'error';
+    const WARNING = 'warning';
+    const NOTICE = 'notice';
+    const INFO = 'info';
+    const DEBUG = 'debug';
 
-    public static function log($message, $level = 'info')
+    public static function alert($message)
     {
-        if (!in_array($level, self::$levels)) {
+        self::log($message, self::ALERT);
+    }
+
+    public static function critical($message)
+    {
+        self::log($message, self::CRITICAL);
+    }
+
+    public static function error($message)
+    {
+        self::log($message, self::ERROR);
+    }
+
+    public static function warning($message)
+    {
+        self::log($message, self::WARNING);
+    }
+
+    public static function notice($message)
+    {
+        self::log($message, self::NOTICE);
+    }
+
+    public static function info($message)
+    {
+        self::log($message, self::INFO);
+    }
+
+    public static function debug($message)
+    {
+        self::log($message, self::DEBUG);
+    }
+
+    public static function log($message, $level = self::INFO)
+    {
+        if (!in_array($level, array(self::ALERT, self::CRITICAL, self::ERROR, self::ERROR, self::WARNING, self::NOTICE, self::INFO, self::DEBUG))) {
             throw new Exception('Illegal logger level: ' . $level, 500);
         }
 
@@ -14,26 +55,12 @@ class Logger
             $message = print_r($message, true);
         }
 
-        $filename = '../app/logs/' . date('Y-m-d') . '.log';
+        $filename = sprintf('../app/logs/%s.log', date('Y-m-d'));
 
         if (!is_dir(dirname($filename))) {
             mkdir(dirname($filename), 0777, true);
         }
 
-        $message = date('Y.m.d H:i:s') . ' ' . str_pad('[' . strtoupper($level) . ']', 7) . ' ' . $message; // TODO заменить на sprintf
-        file_put_contents($filename, $message . PHP_EOL, FILE_APPEND);
-    }
-
-    /**
-     * TODO хоть и лаконично, но не очень хорошо, потому как нет автокомлита и можно ошибиться в написании метода
-     *
-     * @param $name
-     * @param $arguments
-     */
-    function __call($name, $arguments)
-    {
-        if (in_array($name, self::$levels) && count($arguments) == 1) {
-            $this->log($arguments[0], $name);
-        }
+        file_put_contents($filename, sprintf('%s %s %s%s', date('Y.m.d H:i:s'), strtoupper($level), $message, PHP_EOL), FILE_APPEND);
     }
 }
