@@ -1,0 +1,6 @@
+[submodule "lib/smarty"]
+	path = lib/smarty
+	url = git@github.com:opensolutions/smarty.git
+[submodule "lib/PHPMailer"]
+	path = lib/PHPMailer
+	url = git@github.com:PHPMailer/PHPMailer.git
