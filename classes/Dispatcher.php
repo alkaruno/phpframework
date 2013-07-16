@@ -114,6 +114,7 @@ class Dispatcher
                 if (self::$smarty == null) {
                     require FRAMEWORK_HOME . '/lib/smarty/Smarty.class.php';
                     self::$smarty = new Smarty();
+                    self::$smarty->muteExpectedErrors();
                     self::$smarty->setTemplateDir($path);
                     self::$smarty->setCompileDir('../app/cache/views');
                     self::$smarty->addPluginsDir(FRAMEWORK_HOME . '/smarty');
