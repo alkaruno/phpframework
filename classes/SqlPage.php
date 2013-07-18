@@ -15,10 +15,8 @@ class SqlPage
             $values = array($values);
         }
 
-        $db = Database::instance();
-
-        $this->content = $db->getRows(str_replace('SELECT', 'SELECT SQL_CALC_FOUND_ROWS', $sql) . ' LIMIT ' . ($itemsOnPage * ($this->currentPage - 1)) . ', ' . $itemsOnPage, $values);
-        $this->totalPages = ceil($db->getValue('SELECT FOUND_ROWS()') / $itemsOnPage);
+        $this->content = Db::getRows(str_replace('SELECT', 'SELECT SQL_CALC_FOUND_ROWS', $sql) . ' LIMIT ' . ($itemsOnPage * ($this->currentPage - 1)) . ', ' . $itemsOnPage, $values);
+        $this->totalPages = ceil(Db::getValue('SELECT FOUND_ROWS()') / $itemsOnPage);
     }
 
     public function getContent()
