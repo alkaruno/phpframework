@@ -29,7 +29,9 @@ class Db
     {
         $args = func_get_args();
         $statement = self::internalQuery($sql, self::getValues($values, $args));
-        return $statement ? $statement->fetchColumn() : null;
+        $value = $statement->fetchColumn();
+
+        return $value !== false ? $value : null;
     }
 
     public static function getRow($sql, $values = null)

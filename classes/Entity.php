@@ -54,10 +54,15 @@ class Entity
             Db::update('UPDATE `' . $table . '` SET ' . self::getFieldsSql($data, $idColumn) . ' WHERE `' . $idColumn . '` = :' . $idColumn, $data);
             $id = $data[$idColumn];
         } else {
-            $id = Db::insert('INSERT `' . $table . '` SET ' . self::getFieldsSql($data), $data);
+            $id = self::insert($table, $data);
         }
 
         return $id;
+    }
+
+    public static function insert($table, $data)
+    {
+        return Db::insert('INSERT `' . $table . '` SET ' . self::getFieldsSql($data), $data);
     }
 
     public static function delete($table, $id)
@@ -65,7 +70,7 @@ class Entity
         return Db::update('DELETE FROM `' . $table . '` WHERE id = ?', $id);
     }
 
-    private static function getFieldsSql($data, $idColumn = null)
+    public static function getFieldsSql($data, $idColumn = null)
     {
         $sql = array();
         foreach ($data as $field => $value) {

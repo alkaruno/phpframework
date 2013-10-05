@@ -13,7 +13,7 @@ class Image
     private $thumbnail = false;
     private $crop = false;
 
-    public static function init($filename, $type = self::TYPE_IMAGEMAGICK)
+    public static function create($filename, $type = self::TYPE_IMAGEMAGICK)
     {
         $image = new Image();
         $image->type = $type;

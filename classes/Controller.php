@@ -24,6 +24,6 @@ abstract class Controller
     }
 
     public function handle() {
-        ;
+        return null;
     }
 }

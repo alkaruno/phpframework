@@ -109,4 +109,9 @@ class Request
         }
         return $message;
     }
+
+    public function getParameter($name, $default = null)
+    {
+        return isset($_GET[$name]) ? $_GET[$name] : $default;
+    }
 }

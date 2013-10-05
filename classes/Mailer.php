@@ -11,6 +11,13 @@ class Mailer
 
     private $values = array();
 
+    private $attachments = array();
+
+    public static function newInstance()
+    {
+        return new Mailer();
+    }
+
     public function setSubject($subject)
     {
         $this->subject = $subject;
@@ -47,8 +54,18 @@ class Mailer
         return $this;
     }
 
+    public function setValues($values)
+    {
+        foreach ($values as $name => $value) {
+            $this->set($name, $value);
+        }
+        return $this;
+    }
+
     public function send()
     {
+        // TODO переписать и добавить работу с аттачами
+
         $headers = "MIME-Version: 1.0\n";
         $headers .= "Content-type: text/html; charset=utf-8\n";
 
@@ -67,5 +84,7 @@ class Mailer
         if (function_exists('mail')) {
             mail($this->address, $this->subject, $text, $headers);
         }
+
+        Logger::log(sprintf('mail: %s, subject: %s, text:%s%s', $this->address, $this->subject, PHP_EOL, $text));
     }
 }

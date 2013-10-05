@@ -141,6 +141,13 @@ class Validator
         return Db::getValue('SELECT COUNT(1) FROM `' . $params[0] . '` WHERE ' . ($id !== null ? ' id != ' . $id . ' AND ' : '') . ' `' . $params[1] . '` = ?', $value) == 0;
     }
 
+    private function validateHasInDatabase($value, $params, $data)
+    {
+        $id = isset($data['id']) ? $data['id'] : null;
+
+        return Db::getValue('SELECT COUNT(1) FROM `' . $params[0] . '` WHERE ' . ($id !== null ? ' id != ' . $id . ' AND ' : '') . ' `' . $params[1] . '` = ?', $value) != 0;
+    }
+
     private function validateConfirm($value, $params, $data)
     {
         return $value == $data[$params[0]];
@@ -191,6 +198,12 @@ class ValidatorRule
     public function unique($table, $field, $error)
     {
         $this->rules[] = array('unique', $error, array($table, $field));
+        return $this;
+    }
+
+    public function hasInDatabase($table, $field, $error)
+    {
+        $this->rules[] = array('hasInDatabase', $error, array($table, $field));
         return $this;
     }
 

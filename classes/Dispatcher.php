@@ -4,19 +4,19 @@ class Dispatcher
 {
     public static $config = array();
 
-    private static $smarty;
-
     function __construct()
     {
         set_error_handler('Error::handle', E_ERROR | E_WARNING);
         set_exception_handler('Error::handle');
 
-        $appConfig = include('../app/config/app.php');
-        $envConfig = include('../app/config/env.php');
-        self::$config = array_merge_recursive($appConfig, $envConfig);
-
         $request = new Request();
         $GLOBALS['app']['request'] = $request;
+
+        self::$config = array_merge_recursive(include('../app/config/app.php'), include('../app/config/env.php'));
+
+        if (function_exists('app_filter')) {
+            app_filter($request);
+        }
 
         if (isset(self::$config['filters'])) {
             foreach (self::$config['filters'] as $filter) {
@@ -25,7 +25,7 @@ class Dispatcher
                  * @var Filter $filter
                  */
                 $filter = new $filter;
-                $filter->filter($request);
+                $filter->filter($request); // TODO может сделать один фильтр и вызывать его всегда? или сначала брать конфиг env.php, а в app.php уже иметь возможность оперировать всем чем надо.
             }
         }
 
@@ -44,28 +44,7 @@ class Dispatcher
          */
         $controller = new $controller($request);
 
-        $view = call_user_func_array(array($controller, $method), $params);
-
-        if (is_array($view)) {
-            if (count($view) == 2) {
-                list($view, $data) = $view;
-                foreach ($data as $name => $value) {
-                    $request->set($name, $value);
-                }
-            } else if (count($view) == 3) {
-                $request->set($view[1], $view[2]);
-                $view = $view[0];
-            }
-        }
-
-        if (substr($view, 0, 9) == 'redirect:') {
-            header('Location: ' . substr($view, 9));
-            return;
-        }
-
-        if ($view != null) {
-            self::showView($view, $request->getData());
-        }
+        $this->parseControllerResult(call_user_func_array(array($controller, $method), $params), $request);
     }
 
     /**
@@ -90,6 +69,35 @@ class Dispatcher
     }
 
     /**
+     * @param $view
+     * @param $request
+     * @return array
+     */
+    private function parseControllerResult($view, Request $request)
+    {
+        if (is_array($view)) {
+            if (count($view) == 2) {
+                list($view, $data) = $view;
+                foreach ($data as $name => $value) {
+                    $request->set($name, $value);
+                }
+            } else if (count($view) == 3) {
+                $view = $view[0];
+                $request->set($view[1], $view[2]);
+            }
+        }
+
+        if (substr($view, 0, 9) == 'redirect:') {
+            header('Location: ' . substr($view, 9));
+            return;
+        }
+
+        if ($view != null) {
+            self::showView($view, $request->getData());
+        }
+    }
+
+    /**
      * Отображает указанное представление с переданными параметрами
      *
      * @static
@@ -100,42 +108,29 @@ class Dispatcher
      */
     public static function showView($view, $data = array())
     {
-        $path = isset(Dispatcher::$config['views_path']) ? Dispatcher::$config['views_path'] : '../app/views';
+        $viewsPath = isset(Dispatcher::$config['views_path']) ? Dispatcher::$config['views_path'] : '../app/views';
+        $viewsCachePath = isset(Dispatcher::$config['views_cache_path']) ? Dispatcher::$config['views_cache_path'] : '../app/cache/views';
+
         $info = pathinfo($view);
 
         switch ($info['extension']) {
 
             case 'php':
                 extract($data);
-                include $path . '/' . $view;
+                include $viewsPath . '/' . $view;
                 break;
 
             case 'tpl':
-                if (self::$smarty == null) {
-                    require FRAMEWORK_HOME . '/lib/smarty/Smarty.class.php';
-                    self::$smarty = new Smarty();
-                    self::$smarty->muteExpectedErrors();
-                    self::$smarty->setTemplateDir($path);
-                    self::$smarty->setCompileDir('../app/cache/views');
-                    self::$smarty->addPluginsDir(FRAMEWORK_HOME . '/smarty');
-                    self::$smarty->addPluginsDir('../app/helpers/smarty');
-                }
-                self::$smarty->assign($data);
-                $result = self::$smarty->fetch($view);
+                require FRAMEWORK_HOME . '/lib/smarty/Smarty.class.php';
+                $smarty = new Smarty();
+                $smarty->muteExpectedErrors();
+                $smarty->setTemplateDir($viewsPath);
+                $smarty->setCompileDir($viewsCachePath);
+                $smarty->addPluginsDir(FRAMEWORK_HOME . '/smarty');
+                $smarty->addPluginsDir('../app/helpers/smarty');
+                $smarty->assign($data);
+                $result = $smarty->fetch($view);
                 echo $result;
-                break;
-
-            case 'twig':
-                require FRAMEWORK_HOME . '/lib/Twig/Autoloader.php';
-                Twig_Autoloader::register();
-                $loader = new Twig_Loader_Filesystem($path);
-                $twig = new Twig_Environment($loader, array(
-                    'cache' => '../app/cache/views',
-                    'autoescape' => false,
-                    'auto_reload' => true,
-                ));
-                $template = $twig->loadTemplate($view);
-                echo $template->render($data);
                 break;
 
             case 'json':
@@ -180,7 +175,7 @@ class Dispatcher
     }
 
     /**
-     * Загрузка конфигурационного файла
+     * Загрузка конфигурационного файла (должно использоваться отдельными фукнциональными классами или модулями, например, Image, Mail).
      *
      * @static
      * @param $name
@@ -193,4 +188,9 @@ class Dispatcher
         }
         return self::$config[$name];
     }
+}
+
+class App extends Dispatcher
+{
+    // Переход на новый главный класс
 }
