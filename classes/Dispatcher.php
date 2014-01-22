@@ -2,12 +2,14 @@
 
 class Dispatcher
 {
+    public static $folder;
+
     public static $config = array();
 
     function __construct()
     {
-        set_error_handler('Error::handle', E_ERROR | E_WARNING);
-        set_exception_handler('Error::handle');
+        set_error_handler(array('Error', 'handle'), E_ERROR | E_WARNING);
+        set_exception_handler(array('Error', 'handle'));
 
         $request = new Request();
         $GLOBALS['app']['request'] = $request;
@@ -121,16 +123,15 @@ class Dispatcher
                 break;
 
             case 'tpl':
-                require FRAMEWORK_HOME . '/lib/smarty/Smarty.class.php';
+                require self::$folder . '/lib/smarty/Smarty.class.php';
                 $smarty = new Smarty();
                 $smarty->muteExpectedErrors();
                 $smarty->setTemplateDir($viewsPath);
                 $smarty->setCompileDir($viewsCachePath);
-                $smarty->addPluginsDir(FRAMEWORK_HOME . '/smarty');
+                $smarty->addPluginsDir(self::$folder . '/smarty');
                 $smarty->addPluginsDir('../app/helpers/smarty');
                 $smarty->assign($data);
-                $result = $smarty->fetch($view);
-                echo $result;
+                $smarty->display($view);
                 break;
 
             case 'json':

@@ -58,7 +58,7 @@ class Error
             Dispatcher::showView(Dispatcher::$config['errorView'], $request->getData());
         } else {
             extract($data);
-            include FRAMEWORK_HOME . '/views/error.php';
+            include App::$folder . '/views/error.php';
         }
 
         exit;

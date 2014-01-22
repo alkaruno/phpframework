@@ -114,4 +114,9 @@ class Request
     {
         return isset($_GET[$name]) ? $_GET[$name] : $default;
     }
+
+    public function postParameter($name, $default = null)
+    {
+        return isset($_POST[$name]) ? $_POST[$name] : $default;
+    }
 }
