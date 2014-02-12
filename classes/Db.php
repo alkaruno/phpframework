@@ -14,7 +14,7 @@ class Db
 
     public static function __init()
     {
-        $config = Dispatcher::$config['db'];
+        $config = App::$config['db'];
         self::$pdo = new PDO($config['dsn'], $config['username'], $config['password']);
         self::$pdo->exec('SET NAMES ' . (isset($config['charset']) ? $config['charset'] : 'utf8'));
     }

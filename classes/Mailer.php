@@ -75,7 +75,7 @@ class Mailer
 
         if ($this->template != null) {
             ob_start();
-            Dispatcher::showView($this->template, $this->values);
+            App::showView($this->template, $this->values);
             $text = ob_get_clean();
         } else {
             $text = $this->text;

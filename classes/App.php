@@ -1,6 +1,6 @@
 <?php
 
-class Dispatcher
+class App
 {
     public static $folder;
 
@@ -8,8 +8,8 @@ class Dispatcher
 
     function __construct()
     {
-        set_error_handler(array('Error', 'handle'), E_ERROR | E_WARNING);
-        set_exception_handler(array('Error', 'handle'));
+        set_error_handler(array($this, 'errorHandler'), E_ERROR | E_WARNING);
+        set_exception_handler(array($this, 'errorHandler'));
 
         $request = new Request();
         $GLOBALS['app']['request'] = $request;
@@ -27,7 +27,7 @@ class Dispatcher
                  * @var Filter $filter
                  */
                 $filter = new $filter;
-                $filter->filter($request); // TODO может сделать один фильтр и вызывать его всегда? или сначала брать конфиг env.php, а в app.php уже иметь возможность оперировать всем чем надо.
+                $filter->filter($request);
             }
         }
 
@@ -110,8 +110,8 @@ class Dispatcher
      */
     public static function showView($view, $data = array())
     {
-        $viewsPath = isset(Dispatcher::$config['views_path']) ? Dispatcher::$config['views_path'] : '../app/views';
-        $viewsCachePath = isset(Dispatcher::$config['views_cache_path']) ? Dispatcher::$config['views_cache_path'] : '../app/cache/views';
+        $viewsPath = isset(self::$config['views_path']) ? self::$config['views_path'] : '../app/views';
+        $viewsCachePath = isset(self::$config['views_cache_path']) ? self::$config['views_cache_path'] : '../app/cache/views';
 
         $info = pathinfo($view);
 
@@ -189,9 +189,24 @@ class Dispatcher
         }
         return self::$config[$name];
     }
-}
 
-class App extends Dispatcher
-{
-    // Переход на новый главный класс
+    public static function loadPackage($name)
+    {
+        require '../app/packages/' . $name . '/autoload.php';
+
+        $configFilename = '../app/config/' . $name . '.php';
+        if (file_exists($configFilename)) {
+            self::$config[$name] = include($configFilename);
+        }
+    }
+
+    public static function errorHandler()
+    {
+        $args = func_get_args();
+        if (count($args) == 5) {
+            Error::handle($args[0], $args[1], $args[2], $args[3], $args[4]);
+        } else {
+            Error::handle($args[0]);
+        }
+    }
 }

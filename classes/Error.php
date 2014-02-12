@@ -44,18 +44,18 @@ class Error
             'code' => $code,
             'title' => $errors[$code],
             'message' => $message,
-            'debug' => isset(Dispatcher::$config['env']['debug']) && Dispatcher::$config['env']['debug']
+            'debug' => isset(App::$config['env']['debug']) && App::$config['env']['debug']
         );
 
         Logger::log($message, 'error');
 
-        if (isset(Dispatcher::$config['errorView']) && is_readable('../app/views/' . Dispatcher::$config['errorView'])) {
+        if (isset(App::$config['errorView']) && is_readable('../app/views/' . App::$config['errorView'])) {
             /** @var $request Request */
             $request = $GLOBALS['app']['request'];
             foreach ($data as $key => $value) {
                 $request->set($key, $value);
             }
-            Dispatcher::showView(Dispatcher::$config['errorView'], $request->getData());
+            App::showView(App::$config['errorView'], $request->getData());
         } else {
             extract($data);
             include App::$folder . '/views/error.php';

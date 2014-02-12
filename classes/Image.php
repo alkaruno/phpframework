@@ -53,7 +53,7 @@ class Image
             mkdir($pathinfo['dirname'], 0777, true);
         }
 
-        $convert = isset(Dispatcher::$config['env']['convert']) ? Dispatcher::$config['env']['convert'] : 'convert';
+        $convert = isset(App::$config['convert']) ? App::$config['convert'] : 'convert';
         $dim = null;
 
         if ($this->width != null && $this->height != null) {
@@ -79,6 +79,8 @@ class Image
         $method = $this->thumbnail ? '-thumbnail' : '-resize';
 
         // TODO не ресейзить картинку, если она уже нужных размеров
+
+        Logger::log(escapeshellcmd($convert . ' ' . $method . ' ' . $dim . ' -quality ' . $this->quality . ' ' . escapeshellarg($this->filename) . ' ' . escapeshellarg($filename)));
 
         if ($error = exec(escapeshellcmd($convert . ' ' . $method . ' ' . $dim . ' -quality ' . $this->quality . ' ' . escapeshellarg($this->filename) . ' ' . escapeshellarg($filename)))) {
             throw new Exception($error, 500);

@@ -6,7 +6,7 @@ abstract class RouterController extends Controller
     {
         $routes = $this->getRoutes();
         if ($routes != null) {
-            list($method, $params) = Dispatcher::route($this->request->getUri(), $routes);
+            list($method, $params) = App::route($this->request->getUri(), $routes);
             if (is_callable(array($this, $method))) {
                 return call_user_func_array(array($this, $method), $params);
             }

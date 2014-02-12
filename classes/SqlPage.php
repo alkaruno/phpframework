@@ -41,6 +41,6 @@ class SqlPage
 
     public function getLinks($uri)
     {
-        Dispatcher::showView('pagination.tpl', array('uri' => $uri, 'current_page' => $this->currentPage, 'pages_count' => $this->totalPages));
+        App::showView('pagination.tpl', array('uri' => $uri, 'current_page' => $this->currentPage, 'pages_count' => $this->totalPages));
     }
 }
