@@ -41,12 +41,7 @@ class App
         $arr = explode('/', $controller);
         $controller = $arr[count($arr) - 1];
 
-        /**
-         * @var Controller $controller
-         */
-        $controller = new $controller($request);
-
-        $this->parseControllerResult(call_user_func_array(array($controller, $method), $params), $request);
+        $this->parseControllerResult(call_user_func_array(array(new $controller($request), $method), $params), $request);
     }
 
     /**
