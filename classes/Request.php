@@ -27,7 +27,7 @@ class Request
 
     public function get($name)
     {
-        return isset($this->data[$name]) ? $this->data[$name] : NULL;
+        return isset($this->data[$name]) ? $this->data[$name] : null;
     }
 
     public function getData()
