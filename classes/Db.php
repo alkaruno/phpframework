@@ -149,6 +149,10 @@ class Db
             self::$logs[] = array($sql, $values, $time);
         }
 
+        if (function_exists('sql_query_log')) {
+            sql_query_log($sql, $values, $time);
+        }
+
         return $statement;
     }
 
