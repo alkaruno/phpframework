@@ -1,5 +1,9 @@
 <?php
 
+namespace Xplosio\PhpFramework;
+
+use Exception;
+
 class FormValidator extends Validator
 {
     const TOKEN_FORM_ATTRIBUTE = '_token';
@@ -8,7 +12,7 @@ class FormValidator extends Validator
     public function validate()
     {
         if (isset($_POST[self::TOKEN_FORM_ATTRIBUTE]) && $_POST[self::TOKEN_FORM_ATTRIBUTE] != $_SESSION[self::TOKEN_SESSION_ATTRIBUTE]) {
-            throw new Exception('Illegal access', 400);
+            throw new Exception('Illegal access', 401);
         }
 
         return parent::validate($_POST);

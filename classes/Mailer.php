@@ -83,8 +83,8 @@ class Mailer
 
         if (function_exists('mail')) {
             mail($this->address, $this->subject, $text, $headers);
+        } else {
+            Logger::info("Send mail: {$this->address}, subject: {$this->subject}, text:\n{$text}");
         }
-
-        Logger::info(sprintf('mail: %s, subject: %s, text:%s%s', $this->address, $this->subject, PHP_EOL, $text));
     }
 }

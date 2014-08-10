@@ -1,5 +1,7 @@
 <?php
 
+namespace Xplosio\PhpFramework;
+
 /**
  * @deprecated
  */
@@ -93,7 +95,7 @@ class AdminListController extends Controller
             list($path, $arr) = $data;
 
             foreach ($arr as $params) {
-                Image::init($_FILES[$field]['tmp_name'])
+                Image::create($_FILES[$field]['tmp_name'])
                     ->resize(isset($params['width']) ? $params['width'] : null, isset($params['height']) ? $params['height'] : null)
                     ->quality(isset($params['quality']) ? $params['quality'] : 90)
                     ->save($path . '/' . $id . (isset($params['suffix']) ? $params['suffix'] : '') . '.jpg');

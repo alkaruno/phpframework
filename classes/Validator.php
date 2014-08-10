@@ -1,5 +1,7 @@
 <?php
 
+namespace Xplosio\PhpFramework;
+
 class Validator
 {
     private $data;

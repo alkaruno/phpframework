@@ -2,32 +2,37 @@
 
 require __DIR__ . '/classes/App.php';
 require __DIR__ . '/classes/Request.php';
+require __DIR__ . '/classes/Session.php';
 require __DIR__ . '/classes/Controller.php';
+
+use Xplosio\PhpFramework\App;
 
 App::$folder = __DIR__;
 
-spl_autoload_register('phpFrameworkAutoload');
+spl_autoload_register(function ($class) {
 
-function phpFrameworkAutoload($class)
-{
-    if (substr($class, -5) == 'Model' && file_exists('../app/models/' . $class . '.php')) {
-        require '../app/models/' . $class . '.php';
+    $prefix = 'Xplosio\\PhpFramework\\';
+    $len = strlen($prefix);
+
+    if (strncmp($prefix, $class, $len) === 0) {
+        require __DIR__ . '/classes/' . str_replace('\\', DIRECTORY_SEPARATOR, substr($class, $len)) . '.php';
         return true;
     }
 
-    if (substr($class, -6) == 'Helper') {
-        require '../app/helpers/' . $class . '.php';
-        return true;
-    }
+    $arr = [
+        'Model' => 'models',
+        'Helper' => 'helpers',
+        'Controller' => 'controllers'
+    ];
 
-    if (substr($class, -10) == 'Controller' && file_exists('../app/controllers/' . $class . '.php')) {
-        require '../app/controllers/' . $class . '.php';
-        return true;
-    }
-
-    if (file_exists(__DIR__ . '/classes/' . $class . '.php')) {
-        require __DIR__ . '/classes/' . $class . '.php';
-        return true;
+    foreach ($arr as $postfix => $dir) {
+        if (substr($class, -strlen($postfix)) == $postfix) {
+            $filename = "../app/{$dir}/{$class}.php";
+            if (file_exists($filename)) {
+                require $filename;
+                return true;
+            }
+        }
     }
 
     if (isset(App::$config['autoload'][$class])) {
@@ -36,6 +41,6 @@ function phpFrameworkAutoload($class)
     }
 
     return false;
-}
+});
 
 new App();

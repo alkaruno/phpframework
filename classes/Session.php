@@ -1,5 +1,7 @@
 <?php
 
+namespace Xplosio\PhpFramework;
+
 class Session
 {
     public function get($name)

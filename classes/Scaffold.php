@@ -1,24 +1,27 @@
 <?php
 
+namespace Xplosio\PhpFramework;
+
+use Xplosio\PhpFramework\Db;
+use Xplosio\PhpFramework\Validator;
+
+/**
+ * @deprecated
+ */
 class Scaffold
 {
     const IMAGE_FIELD_TYPE = 'image';
     const DEFAULT_LIST_SIZE = 25;
 
-    private $fieldsByType = array();
+    private $fieldsByType = [];
     private $views;
+    private $layout;
 
-    /**
-     * @param $data имя файла с json данными или массив
-     * @return array
-     */
     public function process($data)
     {
         if (is_string($data)) {
             $data = json_decode(file_get_contents($data), true);
         }
-
-        $db = Database::instance();
 
         $id = isset($_GET['id']) ? $_GET['id'] : null;
         $action = isset($_GET['action']) ? $_GET['action'] : null;
@@ -29,23 +32,13 @@ class Scaffold
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             if ($id != null && isset($_POST['_delete'])) {
-                $db->update('DELETE FROM `' . $table . '` WHERE id = ?', $id);
+                Db::update('DELETE FROM `' . $table . '` WHERE id = ?', $id); // TODO extra parameter!
                 return 'redirect:' . $data['url'];
             }
 
             $_POST['id'] = $id;
 
-            /* validation */
-
-            $validator = new Validator();
-            foreach ($data['fields'] as $field => $fieldData) {
-                if (isset($fieldData['validation'])) {
-                    $rule = $validator->add($field);
-                    foreach ($fieldData['validation'] as $row) {
-                        $rule->addRule($row['type'], isset($row['error']) ? $row['error'] : null, isset($row['value']) ? $row['value'] : null);
-                    }
-                }
-            }
+            $validator = $this->getValidator($data);
 
             if ($validator->validate()) {
 
@@ -57,7 +50,7 @@ class Scaffold
                     }
                 }
 
-                $id = Entity::save($table, array_map('trim', $_POST));
+                $id = Db::insert($table, array_map('trim', $_POST));
 
                 /* process images */
                 foreach ($data['fields'] as $fieldName => $fieldData) {
@@ -85,7 +78,7 @@ class Scaffold
                     $sql .= ' ORDER BY ' . $data['list']['order'];
                 }
                 $size = isset($data['list']['size']) ? $data['list']['size'] : self::DEFAULT_LIST_SIZE;
-                $page = new SqlPage($sql, array(), isset($_GET['page']) ? $_GET['page'] : 1, $size);
+                $page = new SqlPage($sql, [], isset($_GET['page']) ? $_GET['page'] : 1, $size);
 
                 $pageContent = $page->getContent();
                 foreach ($pageContent as &$row) {
@@ -98,23 +91,23 @@ class Scaffold
                 }
                 $page->setContent($pageContent);
 
-                return array($this->views['list'], array('data' => $data, 'page' => $page));
+                return [$this->views['list'], ['data' => $data, 'page' => $page]];
             }
 
             if ($id != null) {
-                $_POST = $db->getRow('SELECT * FROM `' . $table . '` WHERE id = ?', $id);
+                $_POST = Db::getRow('SELECT * FROM `' . $table . '` WHERE id = ?', $id);
             }
 
         }
 
-        $editors = array();
+        $editors = [];
         foreach ($data['fields'] as $fieldName => $fieldData) {
             $fieldData['id'] = $id;
             $field = $this->getField($fieldData);
             $editors[$fieldName] = $field->getEditHtml($fieldName, $field->getValue($fieldName, isset($_POST[$fieldName]) ? $_POST[$fieldName] : '', $fieldData), $fieldData);
         }
 
-        return array($this->views['form'], array('data' => $data, '_editors' => $editors, 'errors' => $errors));
+        return [$this->views['form'], ['data' => $data, '_editors' => $editors, 'errors' => $errors]];
     }
 
     /**
@@ -136,6 +129,30 @@ class Scaffold
     public function setViews($views)
     {
         $this->views = $views;
+    }
+
+    public function setLayout($layout)
+    {
+        $this->layout = $layout;
+    }
+
+    private function getValidator($data)
+    {
+        $validator = new Validator();
+        foreach ($data['fields'] as $field => $fieldData) {
+            if (isset($fieldData['validation'])) {
+                $rule = $validator->add($field);
+                foreach ($fieldData['validation'] as $row) {
+                    $rule->addRule(
+                        $row['type'],
+                        isset($row['error']) ? $row['error'] : null,
+                        isset($row['value']) ? $row['value'] : null
+                    );
+                }
+            }
+        }
+
+        return $validator;
     }
 }
 
@@ -365,7 +382,7 @@ class ReferenceField implements Field
         $table = isset($data['table']) ? $data['table'] : $field;
 
         if (!isset($this->data[$field])) {
-            $this->data[$field] = Database::instance()->getPairs('SELECT id, name FROM ' . $table . ' ORDER BY name');
+            $this->data[$field] = Db::getPairs('SELECT id, name FROM ' . $table . ' ORDER BY name');
         }
 
         return $this->data[$field];

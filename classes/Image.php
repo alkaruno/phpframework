@@ -1,5 +1,9 @@
 <?php
 
+namespace Xplosio\PhpFramework;
+
+use Exception;
+
 class Image
 {
     const TYPE_GD = 'gd';

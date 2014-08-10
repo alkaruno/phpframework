@@ -1,8 +1,9 @@
 <?php
 
-/**
- * Обработчик ошибок и исключений
- */
+namespace Xplosio\PhpFramework;
+
+use Exception;
+
 class Error
 {
     public static function handle()
@@ -11,6 +12,9 @@ class Error
 
         if (count($args) == 5) {
             list($code, $text, $file, $line, $info) = $args;
+            if (is_array($info)) {
+                $info = print_r($info, true);
+            }
             $code = 500;
         } else {
             /**
@@ -39,7 +43,7 @@ class Error
             header('HTTP/1.1 ' . isset($errors[$code]) ? $errors[$code] : '', true, $code);
         }
 
-        $message = sprintf('%s %s %s:%s<pre>%s</pre>', $code, $text, $file, $line, $info);
+        $message = "{$code} {$text} {$file}:{$line}\n{$info}";
         $data = array(
             'code' => $code,
             'title' => $errors[$code],

@@ -1,5 +1,9 @@
 <?php
 
+namespace Xplosio\PhpFramework;
+
+use Exception;
+
 abstract class RouterController extends Controller
 {
     public function handle()

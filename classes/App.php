@@ -1,12 +1,17 @@
 <?php
 
+namespace Xplosio\PhpFramework;
+
+use Exception;
+use Smarty;
+
 class App
 {
     public static $folder;
 
     public static $config = array();
 
-    function __construct()
+    public function __construct()
     {
         set_error_handler(array($this, 'errorHandler'), E_ERROR | E_WARNING);
         set_exception_handler(array($this, 'errorHandler'));
@@ -14,7 +19,10 @@ class App
         $request = new Request();
         $GLOBALS['app']['request'] = $request;
 
-        self::$config = array_merge_recursive(include('../app/config/app.php'), include('../app/config/env.php'));
+        self::$config = array_merge_recursive(
+            include('../app/config/app.php'),
+            include('../app/config/env.php')
+        );
 
         if (function_exists('app_filter')) {
             app_filter($request);

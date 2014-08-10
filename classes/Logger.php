@@ -1,5 +1,9 @@
 <?php
 
+namespace Xplosio\PhpFramework;
+
+use ReflectionClass;
+
 class Logger
 {
     const EMERGENCY = 'emergency';
@@ -55,7 +59,7 @@ class Logger
     {
         $loggerLevel = isset(App::$config['logging']['level']) ? App::$config['logging']['level'] : self::WARNING;
 
-        $class = new ReflectionClass('Logger');
+        $class = new ReflectionClass('\Xplosio\PhpFramework\Logger');
         foreach ($class->getConstants() as $const => $value) {
             if ($value == $level) {
                 self::internalLog($level, $message, $context);

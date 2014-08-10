@@ -1,5 +1,7 @@
 <?php
 
+namespace Xplosio\PhpFramework;
+
 class SqlPage
 {
     private $content;
@@ -7,12 +9,12 @@ class SqlPage
     private $currentPage;
     private $totalPages;
 
-    function __construct($sql, $values = array(), $page = 1, $itemsOnPage = 10)
+    function __construct($sql, $values = [], $page = 1, $itemsOnPage = 10)
     {
         $this->currentPage = intval(preg_replace('/\D+/', '', $page));
 
         if (!is_array($values)) {
-            $values = array($values);
+            $values = [$values];
         }
 
         $this->content = Db::getRows(str_replace('SELECT', 'SELECT SQL_CALC_FOUND_ROWS', $sql) . ' LIMIT ' . ($itemsOnPage * ($this->currentPage - 1)) . ', ' . $itemsOnPage, $values);
@@ -41,6 +43,10 @@ class SqlPage
 
     public function getLinks($uri)
     {
-        App::showView('pagination.tpl', array('uri' => $uri, 'current_page' => $this->currentPage, 'pages_count' => $this->totalPages));
+        App::showView('pagination.tpl', [
+            'uri' => $uri,
+            'current_page' => $this->currentPage,
+            'pages_count' => $this->totalPages
+        ]);
     }
 }

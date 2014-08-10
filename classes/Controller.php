@@ -1,5 +1,7 @@
 <?php
 
+namespace Xplosio\PhpFramework;
+
 abstract class Controller
 {
     /**
@@ -7,7 +9,7 @@ abstract class Controller
      */
     protected $request;
 
-    function __construct(Request $request)
+    public function __construct(Request $request)
     {
         $this->request = $request;
     }

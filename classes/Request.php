@@ -1,5 +1,7 @@
 <?php
 
+namespace Xplosio\PhpFramework;
+
 class Request
 {
     const FLASH_MESSAGE_ATTRIBUTE = 'framework.flash_message';
