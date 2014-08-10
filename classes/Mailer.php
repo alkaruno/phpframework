@@ -85,6 +85,6 @@ class Mailer
             mail($this->address, $this->subject, $text, $headers);
         }
 
-        Logger::log(sprintf('mail: %s, subject: %s, text:%s%s', $this->address, $this->subject, PHP_EOL, $text));
+        Logger::info(sprintf('mail: %s, subject: %s, text:%s%s', $this->address, $this->subject, PHP_EOL, $text));
     }
 }

@@ -47,7 +47,7 @@ class Error
             'debug' => isset(App::$config['env']['debug']) && App::$config['env']['debug']
         );
 
-        Logger::log($message, 'error');
+        Logger::error($message);
 
         if (isset(App::$config['errorView']) && is_readable('../app/views/' . App::$config['errorView'])) {
             /** @var $request Request */

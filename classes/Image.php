@@ -80,7 +80,7 @@ class Image
 
         // TODO не ресейзить картинку, если она уже нужных размеров
 
-        Logger::log(escapeshellcmd($convert . ' ' . $method . ' ' . $dim . ' -quality ' . $this->quality . ' ' . escapeshellarg($this->filename) . ' ' . escapeshellarg($filename)));
+        Logger::info(escapeshellcmd($convert . ' ' . $method . ' ' . $dim . ' -quality ' . $this->quality . ' ' . escapeshellarg($this->filename) . ' ' . escapeshellarg($filename)));
 
         if ($error = exec(escapeshellcmd($convert . ' ' . $method . ' ' . $dim . ' -quality ' . $this->quality . ' ' . escapeshellarg($this->filename) . ' ' . escapeshellarg($filename)))) {
             throw new Exception($error, 500);
