@@ -8,7 +8,6 @@ use Smarty;
 class App
 {
     public static $folder;
-
     public static $config = array();
 
     public function __construct()
@@ -23,6 +22,10 @@ class App
             include('../app/config/app.php'),
             include('../app/config/env.php')
         );
+
+        if (isset(App::$config['db'])) {
+            Db::__init(App::$config['db']);
+        }
 
         if (function_exists('app_filter')) {
             app_filter($request);
@@ -111,12 +114,15 @@ class App
      * @return mixed
      * @throws Exception
      */
-    public static function showView($view, $data = array())
+    public static function showView($view, $data = array(), $return = false)
     {
         $viewsPath = isset(self::$config['views_path']) ? self::$config['views_path'] : '../app/views';
-        $viewsCachePath = isset(self::$config['views_cache_path']) ? self::$config['views_cache_path'] : '../app/cache/views';
 
         $info = pathinfo($view);
+
+        if ($return) {
+            ob_start();
+        }
 
         switch ($info['extension']) {
 
@@ -126,7 +132,10 @@ class App
                 break;
 
             case 'tpl':
+
                 require self::$folder . '/lib/smarty/Smarty.class.php';
+                $viewsCachePath = isset(self::$config['views_cache_path']) ? self::$config['views_cache_path'] : '../app/cache/views';
+
                 $smarty = new Smarty();
                 $smarty->muteExpectedErrors();
                 $smarty->setTemplateDir($viewsPath);
@@ -144,6 +153,12 @@ class App
             default:
                 throw new Exception('Illegal view type', 500);
         }
+
+        if ($return) {
+            return ob_get_clean();
+        }
+
+        return null;
     }
 
     /**

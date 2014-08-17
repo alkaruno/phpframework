@@ -16,11 +16,10 @@ class Db
     private static $time = 0;
     private static $logs = array();
 
-    const LOG_LIMIT = 100; // количество запросов, которые помещаются в лог (чтобы не было переполнения памяти, если запросов очень и очень много)
+    const LOG_LIMIT = 100;
 
-    public static function __init()
+    public static function __init($config)
     {
-        $config = App::$config['db'];
         self::$pdo = new PDO($config['dsn'], $config['username'], $config['password']);
         self::$pdo->exec('SET NAMES ' . (isset($config['charset']) ? $config['charset'] : 'utf8'));
     }
@@ -100,7 +99,7 @@ class Db
             $sql = sprintf(
                 'INSERT INTO `%s` (%s) VALUES (%s)',
                 $sql,
-                implode(',', array_keys($values)),
+                implode(',', array_keys($values)), // TODO add `
                 implode(',', array_fill(0, count($values), '?'))
             );
             self::internalQuery($sql, array_values($values));
@@ -156,9 +155,9 @@ class Db
 
             if (is_int($value)) {
                 $type = PDO::PARAM_INT;
-            } else if (is_bool($value)) {
+            } elseif (is_bool($value)) {
                 $type = PDO::PARAM_BOOL;
-            } else if (is_null($value)) {
+            } elseif (is_null($value)) {
                 $type = PDO::PARAM_NULL;
             } else {
                 $type = PDO::PARAM_STR;
@@ -201,5 +200,3 @@ class Db
         return $values;
     }
 }
-
-Db::__init();
