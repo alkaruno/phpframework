@@ -1,5 +1,10 @@
 <?php
 
+namespace Xplosio\PhpFramework;
+
+use Xplosio\PhpFramework\App;
+use Xplosio\PhpFramework\Logger;
+
 class Mailer
 {
     private $subject;

@@ -59,7 +59,7 @@ class Logger
     {
         $loggerLevel = isset(App::$config['logging']['level']) ? App::$config['logging']['level'] : self::WARNING;
 
-        $class = new ReflectionClass('\Xplosio\PhpFramework\Logger');
+        $class = new ReflectionClass('\\Xplosio\\PhpFramework\\Logger');
         foreach ($class->getConstants() as $const => $value) {
             if ($value == $level) {
                 self::internalLog($level, $message, $context);

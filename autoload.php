@@ -36,7 +36,7 @@ spl_autoload_register(function ($class) {
     }
 
     if (isset(App::$config['autoload'][$class])) {
-        require '../app/' . App::$config['autoload'][$class] . $class . '.php';
+        require '../app/' . App::$config['autoload'][$class] . '/' . $class . '.php';
         return true;
     }
 

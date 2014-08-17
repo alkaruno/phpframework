@@ -25,7 +25,8 @@ abstract class Controller
         exit;
     }
 
-    public function handle() {
+    public function handle()
+    {
         return null;
     }
 }
