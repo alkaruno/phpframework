@@ -8,15 +8,17 @@ use Smarty;
 class App
 {
     public static $folder;
-    public static $config = array();
+    public static $config = [];
+
+    /** @var Request */
+    public static $request;
 
     public function __construct()
     {
-        set_error_handler(array($this, 'errorHandler'), E_ERROR | E_WARNING);
-        set_exception_handler(array($this, 'errorHandler'));
+        set_error_handler([$this, 'errorHandler'], E_ERROR | E_WARNING);
+        set_exception_handler([$this, 'errorHandler']);
 
-        $request = new Request();
-        $GLOBALS['app']['request'] = $request;
+        App::$request = new Request();
 
         self::$config = array_merge_recursive(
             include('../app/config/app.php'),
@@ -28,9 +30,10 @@ class App
         }
 
         if (function_exists('app_filter')) {
-            app_filter($request);
+            app_filter(App::$request);
         }
 
+        /** @deprecated use app_filter function */
         if (isset(self::$config['filters'])) {
             foreach (self::$config['filters'] as $filter) {
                 require '../app/' . $filter . '.php';
@@ -38,11 +41,11 @@ class App
                  * @var Filter $filter
                  */
                 $filter = new $filter;
-                $filter->filter($request);
+                $filter->filter(App::$request);
             }
         }
 
-        list($controller, $method, $params) = $this->getHandlerAndParams($request->getUri());
+        list($controller, $method, $params) = $this->getHandlerAndParams(App::$request->getUri());
 
         if (substr($controller, -10) !== 'Controller') {
             $controller .= 'Controller';
@@ -52,15 +55,10 @@ class App
         $arr = explode('/', $controller);
         $controller = $arr[count($arr) - 1];
 
-        $this->parseControllerResult(call_user_func_array(array(new $controller($request), $method), $params), $request);
+        $view = call_user_func_array([new $controller(App::$request), $method], $params);
+        $this->parseControllerResult($view, App::$request);
     }
 
-    /**
-     * Возвращает обработчик по REQUEST_URI и роутинговым правилам
-     *
-     * @param $uri
-     * @return array
-     */
     private function getHandlerAndParams($uri)
     {
         list($handler, $params) = self::route($uri, self::$config['routes']);
@@ -73,14 +71,9 @@ class App
             $method = 'handle';
         }
 
-        return array($controller, $method, $params);
+        return [$controller, $method, $params];
     }
 
-    /**
-     * @param $view
-     * @param $request
-     * @return array
-     */
     private function parseControllerResult($view, Request $request)
     {
         if (is_array($view)) {
@@ -90,8 +83,8 @@ class App
                     $request->set($name, $value);
                 }
             } else if (count($view) == 3) {
-                $view = $view[0];
                 $request->set($view[1], $view[2]);
+                $view = $view[0];
             }
         }
 
@@ -105,16 +98,7 @@ class App
         }
     }
 
-    /**
-     * Отображает указанное представление с переданными параметрами
-     *
-     * @static
-     * @param $view
-     * @param array $data
-     * @return mixed
-     * @throws Exception
-     */
-    public static function showView($view, $data = array(), $return = false)
+    public static function showView($view, $data = [], $return = false)
     {
         $viewsPath = isset(self::$config['views_path']) ? self::$config['views_path'] : '../app/views';
 
@@ -161,15 +145,6 @@ class App
         return null;
     }
 
-    /**
-     * По роутинговым правилам находит хендлер и возвращает параметры
-     *
-     * @static
-     * @param $input
-     * @param $routes
-     * @return array
-     * @throws Exception
-     */
     public static function route($input, $routes)
     {
         if ($routes !== null && is_array($routes)) {
@@ -185,21 +160,14 @@ class App
                         return self::route($input, $hanler);
                     }
                     array_shift($matches);
-                    return array($hanler, $matches);
+                    return [$hanler, $matches];
                 }
             }
         }
 
-        throw new Exception('Page not found', 404);
+        throw new Exception('Page not found for URI: ' . $input, 404);
     }
 
-    /**
-     * Загрузка конфигурационного файла (должно использоваться отдельными фукнциональными классами или модулями, например, Image, Mail).
-     *
-     * @static
-     * @param $name
-     * @return mixed
-     */
     public static function loadConfig($name)
     {
         if (!isset(self::$config[$name])) {

@@ -47,24 +47,24 @@ class Entity
      * @static
      * @param $table
      * @param $data
-     * @param string $idColumn
+     * @param string $id
      * @return string
      */
-    public static function save($table, $data, $idColumn = 'id')
+    public static function save($table, $data, $id = 'id')
     {
-        if (isset($data[$idColumn]) && Db::getValue('SELECT COUNT(1) FROM `' . $table . '` WHERE `' . $idColumn . '` = ?', $data[$idColumn]) > 0) {
-            Db::update('UPDATE `' . $table . '` SET ' . self::getFieldsSql($data, $idColumn) . ' WHERE `' . $idColumn . '` = :' . $idColumn, $data);
-            $id = $data[$idColumn];
+        if (is_numeric($id)) {
+            $data['id'] = $id;
+            $id = 'id';
+        }
+
+        if (isset($data[$id]) && Db::getValue('SELECT COUNT(1) FROM `' . $table . '` WHERE `' . $id . '` = ?', $data[$id]) > 0) {
+            Db::update('UPDATE `' . $table . '` SET ' . self::getFieldsSql($data, $id) . ' WHERE `' . $id . '` = :' . $id, $data);
+            $id = $data[$id];
         } else {
-            $id = self::insert($table, $data);
+            $id = Db::insert($table, $data);
         }
 
         return $id;
-    }
-
-    public static function insert($table, $data)
-    {
-        return Db::insert('INSERT `' . $table . '` SET ' . self::getFieldsSql($data), $data);
     }
 
     public static function delete($table, $id)

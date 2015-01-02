@@ -29,4 +29,9 @@ abstract class Controller
     {
         return null;
     }
+
+    public function getRequest()
+    {
+        return $this->request;
+    }
 }

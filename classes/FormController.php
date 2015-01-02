@@ -1,5 +1,7 @@
 <?php
 
+namespace Xplosio\PhpFramework;
+
 abstract class FormController extends Controller
 {
     public function handle()

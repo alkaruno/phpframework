@@ -8,7 +8,7 @@ use Xplosio\PhpFramework\Validator;
 /**
  * @deprecated
  */
-class Scaffold
+class ScaffoldOld
 {
     const IMAGE_FIELD_TYPE = 'image';
     const DEFAULT_LIST_SIZE = 25;

@@ -12,6 +12,7 @@ class Error
 
         if (count($args) == 5) {
             list($code, $text, $file, $line, $info) = $args;
+            $info = null;
             if (is_array($info)) {
                 $info = print_r($info, true);
             }
@@ -43,7 +44,11 @@ class Error
             header('HTTP/1.1 ' . isset($errors[$code]) ? $errors[$code] : '', true, $code);
         }
 
-        $message = "{$code} {$text} {$file}:{$line}\n{$info}";
+        $message = "{$code} {$text} {$file}:{$line}";
+        if ($info != null) {
+            $message .= "\n{$info}";
+        }
+
         $data = array(
             'code' => $code,
             'title' => $errors[$code],

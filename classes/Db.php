@@ -83,6 +83,13 @@ class Db
         return $pairs;
     }
 
+    public static function getIterator($sql, $values = null)
+    {
+        $args = func_get_args();
+        $statement = self::internalQuery($sql, self::getValues($values, $args));
+        return $statement ? $statement : null;
+    }
+
     public static function update($sql, $values = null)
     {
         $args = func_get_args();
@@ -96,13 +103,11 @@ class Db
             $args = func_get_args();
             self::internalQuery($sql, self::getValues($values, $args));
         } else {
-            $sql = sprintf(
-                'INSERT INTO `%s` (%s) VALUES (%s)',
-                $sql,
-                implode(',', array_keys($values)), // TODO add `
-                implode(',', array_fill(0, count($values), '?'))
-            );
-            self::internalQuery($sql, array_values($values));
+            $pairs = [];
+            foreach ($values as $key => $value) {
+                $pairs[] = "`{$key}` = ?";
+            }
+            self::internalQuery('INSERT `' . $sql . '` SET ' . implode(', ', $pairs), array_values($values));
         }
 
         return self::$pdo->lastInsertId();
