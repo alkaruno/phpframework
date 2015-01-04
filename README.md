@@ -1,7 +1,7 @@
 phpframework
 ============
 
-Велосипед собственной сборки для быстрого создания веб-приложений. PHP >= 5.2
+Велосипед собственной сборки для быстрого создания веб-приложений. PHP >= 5.4
 
 
 Структура проекта и конфигурация
@@ -44,8 +44,9 @@ _.htaccess_
 _index.php_
 
 	<?php
-
-	require '../../phpframework/autoload.php';
+    
+    require '../vendor/autoload.php';
+    new \Xplosio\PhpFramework\App();
 
 Конфигурационные настройки хранятся в папке `config`. `env.php` содержит настройки, привязанные к конкретному окружению (настройки БД и пр.), `app.php` содержит общие настройки приложения.
 
@@ -53,13 +54,13 @@ _index.php_
 
 	<?php
 
-	return array(
-	    'db' => array(
+	return [
+	    'db' => [
 	        'dsn' => 'mysql:dbname=dbname;host=localhost;charset=utf8',
 	        'username' => 'root',
 	        'password' => 'password'
-	    )
-	);
+	    ]
+	];
 
 
 Роутинг
@@ -69,12 +70,12 @@ _index.php_
 
 	<?php
 
-	return array(
-	    'routes' => array(
-	        array('^/$', 'HomeController'),
-	        array('^/profile', 'ProfileController')
-	    )
-	);
+	return [
+	    'routes' => [
+	        ['^/$', 'HomeController'],
+	        ['^/profile', 'ProfileController']
+	    ]
+	];
 
 Во втором случае на контроллер переправляются все запросы, которые начинаются на `/profile`. Дополнительный роутинг может осуществляться в самом контроллере `ProfileController`.
 
@@ -212,7 +213,7 @@ _index.php_
 	    if ($validator->validate()) {
 	        $data = $validator->getData(); // отвалидированные данные
 	    } else {
-	        $this->request->set('errors', $validator->getErrors()); // передача ошибок в представление
+	        $this->request->set('errors', $validator->getErrors()); // передача ошибок в отображение
 	    }
 	}
 

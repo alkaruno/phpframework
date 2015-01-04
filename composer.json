@@ -1,5 +1,6 @@
 {
     "name": "alkaruno/phpframework",
+    "description": "Yet another PHP Framework",
     "require": {
         "php": ">=5.4"
     },
