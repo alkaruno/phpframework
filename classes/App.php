@@ -18,6 +18,7 @@ class App
         set_error_handler([$this, 'errorHandler'], E_ERROR | E_WARNING);
         set_exception_handler([$this, 'errorHandler']);
 
+        App::$folder = dirname(__DIR__);
         App::$request = new Request();
 
         self::$config = array_merge_recursive(
@@ -117,7 +118,6 @@ class App
 
             case 'tpl':
 
-                require self::$folder . '/lib/smarty/Smarty.class.php';
                 $viewsCachePath = isset(self::$config['views_cache_path']) ? self::$config['views_cache_path'] : '../app/cache/views';
 
                 $smarty = new Smarty();
