@@ -1,0 +1,12 @@
+{
+    "name": "alkaruno/phpframework",
+    "require": {
+        "php": ">=5.4",
+        "smarty/smarty": "v3.1.21"
+    },
+    "autoload": {
+        "psr-4": {
+            "Xplosio\\PhpFramework\\": "classes/"
+        }
+    }
+}
