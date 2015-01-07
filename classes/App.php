@@ -150,17 +150,17 @@ class App
         if ($routes !== null && is_array($routes)) {
             foreach ($routes as $key => $value) {
                 if (is_array($value)) {
-                    list($pattern, $hanler) = $value;
+                    list($pattern, $handler) = $value;
                 } else {
                     $pattern = $key;
-                    $hanler = $value;
+                    $handler = $value;
                 }
                 if (preg_match('|' . $pattern . '|u', $input, $matches)) {
-                    if (is_array($hanler)) {
-                        return self::route($input, $hanler);
+                    if (is_array($handler)) {
+                        return self::route($input, $handler);
                     }
                     array_shift($matches);
-                    return [$hanler, $matches];
+                    return [$handler, $matches];
                 }
             }
         }
