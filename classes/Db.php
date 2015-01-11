@@ -204,4 +204,12 @@ class Db
 
         return $values;
     }
+
+    /**
+     * @return PDO
+     */
+    public static function getPdo()
+    {
+        return self::$pdo;
+    }
 }
