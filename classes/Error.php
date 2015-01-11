@@ -58,9 +58,9 @@ class Error
 
         Logger::error($message);
 
-        if (isset(App::$config['errorView']) && is_readable('../app/views/' . App::$config['errorView'])) {
+        if (isset(App::$config['errorView']) && is_readable(App::$config['views_path'] . DIRECTORY_SEPARATOR . App::$config['errorView'])) {
             /** @var $request Request */
-            $request = $GLOBALS['app']['request'];
+            $request = App::$request;
             foreach ($data as $key => $value) {
                 $request->set($key, $value);
             }
