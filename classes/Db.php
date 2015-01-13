@@ -113,6 +113,11 @@ class Db
         return self::$pdo->lastInsertId();
     }
 
+    public static function getLastInsertId()
+    {
+        return self::$pdo->lastInsertId();
+    }
+
     public static function getFoundRows()
     {
         return self::getValue('SELECT FOUND_ROWS()');
