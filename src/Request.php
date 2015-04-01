@@ -121,4 +121,14 @@ class Request
     {
         return isset($_POST[$name]) ? $_POST[$name] : $default;
     }
+
+    public static function getParam($name, $default = null)
+    {
+        return isset($_REQUEST[$name]) ? $_REQUEST[$name] : $default;
+    }
+
+    public static function isMethod($method)
+    {
+        return strtoupper($_SERVER['REQUEST_METHOD']) == strtoupper($method);
+    }
 }
