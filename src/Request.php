@@ -9,12 +9,7 @@ class Request
     private $uri;
     private $data;
 
-    /**
-     * @var Session
-     */
-    private $session;
-
-    function __construct()
+    public function __construct()
     {
         $data = parse_url($_SERVER['REQUEST_URI']);
         $this->uri = $data['path'];
@@ -74,30 +69,6 @@ class Request
         $this->uri = $uri;
     }
 
-    public function getSession()
-    {
-        if ($this->session == null) {
-            $this->session = new Session();
-        }
-
-        return $this->session;
-    }
-
-    public function getCookie($name)
-    {
-        return isset($_COOKIE[$name]) ? $_COOKIE[$name] : null;
-    }
-
-    public function setCookie($name, $value, $period, $path = '/', $domain = null)
-    {
-        setcookie($name, $value, time() + $period, $path, $domain);
-    }
-
-    public function removeCookie($name)
-    {
-        setcookie($name, '', 0, '/');
-    }
-
     public function setFlashMessage($message)
     {
         $this->getSession()->set(self::FLASH_MESSAGE_ATTRIBUTE, $message);
@@ -127,8 +98,18 @@ class Request
         return isset($_REQUEST[$name]) ? $_REQUEST[$name] : $default;
     }
 
+    public static function isGet()
+    {
+        return self::isMethod('GET');
+    }
+
+    public static function isPost()
+    {
+        return self::isMethod('POST');
+    }
+
     public static function isMethod($method)
     {
-        return strtoupper($_SERVER['REQUEST_METHOD']) == strtoupper($method);
+        return strtoupper($_SERVER['REQUEST_METHOD']) === strtoupper($method);
     }
 }

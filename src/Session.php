@@ -4,21 +4,21 @@ namespace Xplosio\PhpFramework;
 
 class Session
 {
-    public function get($name)
+    public static function get($name, $default = null)
     {
-        return isset($_SESSION[$name]) ? $_SESSION[$name] : null;
+        return isset($_SESSION[$name]) ? $_SESSION[$name] : $default;
     }
 
-    public function set($name, $value)
+    public static function set($name, $value)
     {
         if ($value != null) {
             $_SESSION[$name] = $value;
         } else {
-            $this->remove($name);
+            self::remove($name);
         }
     }
 
-    public function remove($name)
+    public static function remove($name)
     {
         unset($_SESSION[$name]);
     }
