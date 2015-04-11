@@ -52,7 +52,6 @@ class App
             $controller .= 'Controller';
         }
 
-        require '../app/controllers/' . $controller . '.php';
         $arr = explode('/', $controller);
         $controller = $arr[count($arr) - 1];
 
@@ -65,7 +64,7 @@ class App
         list($handler, $params) = self::route($uri, self::$config['routes']);
 
         $data = explode('.', $handler);
-        if (count($data) == 2) {
+        if (count($data) === 2) {
             list($controller, $method) = $data;
         } else {
             $controller = $handler;
@@ -78,23 +77,23 @@ class App
     private function parseControllerResult($view, Request $request)
     {
         if (is_array($view)) {
-            if (count($view) == 2) {
+            if (count($view) === 2) {
                 list($view, $data) = $view;
                 foreach ($data as $name => $value) {
                     $request->set($name, $value);
                 }
-            } else if (count($view) == 3) {
+            } else if (count($view) === 3) {
                 $request->set($view[1], $view[2]);
                 $view = $view[0];
             }
         }
 
-        if (substr($view, 0, 9) == 'redirect:') {
+        if (substr($view, 0, 9) === 'redirect:') {
             header('Location: ' . substr($view, 9));
             return;
         }
 
-        if ($view != null) {
+        if ($view !== null) {
             self::showView($view, $request->getData());
         }
     }
@@ -189,7 +188,7 @@ class App
     public static function errorHandler()
     {
         $args = func_get_args();
-        if (count($args) == 5) {
+        if (count($args) === 5) {
             Error::handle($args[0], $args[1], $args[2], $args[3], $args[4]);
         } else {
             Error::handle($args[0]);
