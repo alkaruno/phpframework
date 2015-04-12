@@ -51,9 +51,7 @@ class App
         if (substr($controller, -10) !== 'Controller') {
             $controller .= 'Controller';
         }
-
-        $arr = explode('/', $controller);
-        $controller = $arr[count($arr) - 1];
+        $controller = '\\app\\controllers\\' . $controller;
 
         $view = call_user_func_array([new $controller(App::$request), $method], $params);
         $this->parseControllerResult($view, App::$request);
