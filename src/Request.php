@@ -71,31 +71,31 @@ class Request
 
     public function setFlashMessage($message)
     {
-        $this->getSession()->set(self::FLASH_MESSAGE_ATTRIBUTE, $message);
+        Session::set(self::FLASH_MESSAGE_ATTRIBUTE, $message);
     }
 
     public function getFlashMessage()
     {
-        $message = $this->getSession()->get(self::FLASH_MESSAGE_ATTRIBUTE);
-        if ($message != null) {
-            $this->getSession()->remove(self::FLASH_MESSAGE_ATTRIBUTE);
+        $message = Session::get(self::FLASH_MESSAGE_ATTRIBUTE);
+        if ($message !== null) {
+            Session::remove(self::FLASH_MESSAGE_ATTRIBUTE);
         }
         return $message;
     }
 
     public function getParameter($name, $default = null)
     {
-        return isset($_GET[$name]) ? $_GET[$name] : $default;
+        return array_key_exists($name, $_GET) ? $_GET[$name] : $default;
     }
 
     public function postParameter($name, $default = null)
     {
-        return isset($_POST[$name]) ? $_POST[$name] : $default;
+        return array_key_exists($name, $_POST) ? $_POST[$name] : $default;
     }
 
     public static function getParam($name, $default = null)
     {
-        return isset($_REQUEST[$name]) ? $_REQUEST[$name] : $default;
+        return array_key_exists($name, $_REQUEST) ? $_REQUEST[$name] : $default;
     }
 
     public static function isGet()
@@ -113,3 +113,4 @@ class Request
         return strtoupper($_SERVER['REQUEST_METHOD']) === strtoupper($method);
     }
 }
+
