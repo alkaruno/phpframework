@@ -9,12 +9,12 @@ class Assert
         if ($value === false) {
             throw new \InvalidArgumentException($message);
         }
-
-        return $value;
     }
 
     public static function notNull($value, $message = null)
     {
-        return self::check($value !== null, $message);
+        self::check($value !== null, $message);
+
+        return $value;
     }
 }
