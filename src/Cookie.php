@@ -16,6 +16,9 @@ class Cookie
 
     public static function remove($name)
     {
+        $value = self::get($name);
         setcookie($name, '', 0, '/');
+
+        return $value;
     }
 }
