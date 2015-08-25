@@ -21,7 +21,6 @@ class Db
     public static function __init($config)
     {
         self::$pdo = new PDO($config['dsn'], $config['username'], $config['password']);
-        self::$pdo->exec('SET NAMES ' . (isset($config['charset']) ? $config['charset'] : 'utf8'));
     }
 
     public static function query($sql, $values = null)
