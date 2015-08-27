@@ -2,9 +2,7 @@
 
 namespace Xplosio\PhpFramework;
 
-use Exception;
 use PDO;
-use PDOStatement;
 
 class Db
 {
@@ -14,7 +12,7 @@ class Db
     private static $pdo;
 
     private static $time = 0;
-    private static $logs = array();
+    private static $logs = [];
 
     const LOG_LIMIT = 100;
 
@@ -75,10 +73,11 @@ class Db
 
     public static function getPairs($sql, $values = null, $keyColumn = 'id', $valueColumn = 'name')
     {
-        $pairs = array();
+        $pairs = [];
         foreach (self::getRows($sql, $values) as $row) {
             $pairs[$row[$keyColumn]] = $row[$valueColumn];
         }
+
         return $pairs;
     }
 
@@ -86,7 +85,7 @@ class Db
     {
         $args = func_get_args();
         $statement = self::internalQuery($sql, self::getValues($values, $args));
-        return $statement ? $statement : null;
+        return $statement ?: null;
     }
 
     public static function update($sql, $values = null)
@@ -122,6 +121,23 @@ class Db
         return self::getValue('SELECT FOUND_ROWS()');
     }
 
+    public static function transaction(\Closure $callback)
+    {
+        try {
+            self::begin();
+            $result = $callback();
+            self::commit();
+        } catch (\Exception $e) {
+            self::rollback();
+            throw $e;
+        } catch (\Throwable $e) {
+            self::rollback();
+            throw $e;
+        }
+
+        return $result;
+    }
+
     public static function begin()
     {
         self::$pdo->beginTransaction();
@@ -150,14 +166,11 @@ class Db
     private static function internalQuery($sql, $values = null)
     {
         if (!is_array($values)) {
-            $values = array($values);
+            $values = [$values];
         }
 
         $time = microtime(true);
 
-        /**
-         * @var PDOStatement
-         */
         $statement = self::$pdo->prepare($sql);
 
         foreach ($values as $param => $value) {
@@ -172,7 +185,7 @@ class Db
                 $type = PDO::PARAM_STR;
             }
 
-            $param = is_int($param) ? intval($param) + 1 : $param;
+            $param = is_int($param) ? (int)$param + 1 : $param;
 
             $statement->bindValue($param, $value, $type);
         }
@@ -180,7 +193,7 @@ class Db
         if (!$statement->execute()) {
             $info = $statement->errorInfo();
             if (isset($info[2])) {
-                throw new Exception($sql . PHP_EOL . $info[2], 500);
+                throw new \LogicException($sql . PHP_EOL . $info[2], 500);
             }
             $statement = false;
         }
@@ -189,7 +202,7 @@ class Db
         self::$time += $time;
 
         if (count(self::$logs) < self::LOG_LIMIT) {
-            self::$logs[] = array($sql, $values, $time);
+            self::$logs[] = [$sql, $values, $time];
         }
 
         if (function_exists('sql_query_log')) {
@@ -201,7 +214,7 @@ class Db
 
     private static function getValues($values, $args)
     {
-        if (count($args) > 2 || !is_array($values)) {
+        if (!is_array($values) || count($args) > 2) {
             $values = $args;
             array_shift($values);
         }
@@ -209,9 +222,6 @@ class Db
         return $values;
     }
 
-    /**
-     * @return PDO
-     */
     public static function getPdo()
     {
         return self::$pdo;
