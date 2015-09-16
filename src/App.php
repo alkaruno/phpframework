@@ -2,6 +2,8 @@
 
 namespace Xplosio\PhpFramework;
 
+use Smarty;
+
 class App
 {
     public static $config = [];
