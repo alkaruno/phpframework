@@ -2,20 +2,36 @@
 
 namespace Xplosio\PhpFramework;
 
-use ReflectionClass;
-
 class Logger
 {
-    const EMERGENCY = 'emergency';
-    const ALERT     = 'alert';
-    const CRITICAL  = 'critical';
-    const ERROR     = 'error';
-    const WARNING   = 'warning';
-    const NOTICE    = 'notice';
-    const INFO      = 'info';
-    const DEBUG     = 'debug';
+    const EMERGENCY = 1;
+    const ALERT = 2;
+    const CRITICAL = 3;
+    const ERROR = 4;
+    const WARNING = 5;
+    const NOTICE = 6;
+    const INFO = 7;
+    const DEBUG = 8;
 
-    public function emergency($message, array $context = null)
+    protected static $levels = [
+        self::EMERGENCY => 'EMERGENCY',
+        self::ALERT => 'ALERT',
+        self::CRITICAL => 'CRITICAL',
+        self::ERROR => 'ERROR',
+        self::WARNING => 'WARNING',
+        self::NOTICE => 'NOTICE',
+        self::INFO => 'INFO',
+        self::DEBUG => 'DEBUG'
+    ];
+
+    private static $level;
+
+    public static function init()
+    {
+        self::$level = App::getConfigValue(['logging', 'level'], self::WARNING);
+    }
+
+    public static function emergency($message, array $context = null)
     {
         self::log(self::EMERGENCY, $message, $context);
     }
@@ -57,22 +73,10 @@ class Logger
 
     public static function log($level, $message, array $context = null)
     {
-        $loggerLevel = isset(App::$config['logging']['level']) ? App::$config['logging']['level'] : self::WARNING;
-
-        $class = new ReflectionClass('\\Xplosio\\PhpFramework\\Logger');
-        foreach ($class->getConstants() as $const => $value) {
-            if ($value == $level) {
-                self::internalLog($level, $message, $context);
-                return;
-            }
-            if ($value == $loggerLevel) {
-                return;
-            }
+        if ($level > self::$level) {
+            return;
         }
-    }
 
-    private static function internalLog($level, $message, $context)
-    {
         if (is_array($message)) {
             $message = print_r($message, true);
         }
@@ -84,10 +88,9 @@ class Logger
             mkdir(dirname($filename), 0777, true);
         }
 
-        file_put_contents(
-            $filename,
-            sprintf('%s %s %s', date('Y.m.d H:i:s'), strtoupper($level), $message),
-            FILE_APPEND
-        );
+        $line = sprintf('%s %s %s', date('Y.m.d H:i:s'), strtoupper(self::$levels[$level]), $message);
+        file_put_contents($filename, $line, FILE_APPEND);
     }
 }
+
+Logger::init();

@@ -2,13 +2,10 @@
 
 namespace Xplosio\PhpFramework;
 
-use Exception;
-use Smarty;
-
 class App
 {
-    public static $folder;
     public static $config = [];
+    public static $folder;
 
     /** @var Request */
     public static $request;
@@ -18,43 +15,33 @@ class App
         set_error_handler([$this, 'errorHandler'], E_ERROR | E_WARNING);
         set_exception_handler([$this, 'errorHandler']);
 
-        App::$folder = dirname(__DIR__);
-        App::$request = new Request();
+        self::$folder = dirname(__DIR__);
+        self::$request = new Request();
 
-        self::$config = array_merge_recursive(
-            include('../app/config/app.php'),
-            include('../app/config/env.php')
-        );
+        self::$config = array_merge_recursive(include('../app/config/app.php'), include('../app/config/env.php'));
 
-        if (isset(App::$config['db'])) {
-            Db::__init(App::$config['db']);
+        if (array_key_exists('db', self::$config)) {
+            Db::__init(self::$config['db']);
         }
 
         if (function_exists('app_filter')) {
-            app_filter(App::$request);
+            app_filter(self::$request);
         }
 
-        /** @deprecated use app_filter function */
-        if (isset(self::$config['filters'])) {
-            foreach (self::$config['filters'] as $filter) {
-                require '../app/' . $filter . '.php';
-                /**
-                 * @var Filter $filter
-                 */
-                $filter = new $filter;
-                $filter->filter(App::$request);
-            }
+        if (array_key_exists('filter', self::$config) && is_callable(self::$config['filter'])) {
+            $callable = self::$config['filter'];
+            $callable(self::$request);
         }
 
-        list($controller, $method, $params) = $this->getHandlerAndParams(App::$request->getUri());
+        list($controller, $method, $params) = $this->getHandlerAndParams(self::$request->getUri());
 
         if (substr($controller, -10) !== 'Controller') {
             $controller .= 'Controller';
         }
         $controller = '\\app\\controllers\\' . $controller;
 
-        $view = call_user_func_array([new $controller(App::$request), $method], $params);
-        $this->parseControllerResult($view, App::$request);
+        $view = call_user_func_array([new $controller(self::$request), $method], $params);
+        $this->parseControllerResult($view, self::$request);
     }
 
     private function getHandlerAndParams($uri)
@@ -132,7 +119,7 @@ class App
                 break;
 
             default:
-                throw new Exception('Illegal view type', 500);
+                throw new \InvalidArgumentException('Illegal view type', 500);
         }
 
         if ($return) {
@@ -162,22 +149,26 @@ class App
             }
         }
 
-        throw new Exception('Page not found for URI: ' . $input, 404);
+        throw new \HttpUrlException("Page not found for URI: $input", 404);
     }
 
     public static function loadConfig($name)
     {
-        if (!isset(self::$config[$name])) {
-            self::$config[$name] = include('../app/config/' . $name . '.php');
+        if (!array_key_exists($name, self::$config)) {
+            self::$config[$name] = include("../app/config/$name.php");
         }
+
         return self::$config[$name];
     }
 
+    /**
+     * @deprecated use composer packages
+     */
     public static function loadPackage($name)
     {
-        require '../app/packages/' . $name . '/autoload.php';
+        require "../app/packages/$name/autoload.php";
 
-        $configFilename = '../app/config/' . $name . '.php';
+        $configFilename = "../app/config/$name.php";
         if (file_exists($configFilename)) {
             self::$config[$name] = include($configFilename);
         }
@@ -191,5 +182,21 @@ class App
         } else {
             Error::handle($args[0]);
         }
+    }
+
+    public static function getConfigValue($key, $default = null)
+    {
+        $key = (array)$key;
+
+        $array = App::$config;
+        $lastKey = array_pop($key);
+        foreach ($key as $keyPart) {
+            $array = array_key_exists($keyPart, $array) ? $array[$keyPart] : null;
+            if ($array === null) {
+                return $default;
+            }
+        }
+
+        return array_key_exists($lastKey, $array) ? $array[$lastKey] : $default;
     }
 }
