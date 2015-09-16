@@ -29,6 +29,16 @@ class Logger
     public static function init()
     {
         self::$level = App::getConfigValue(['logging', 'level'], self::WARNING);
+
+        if (!is_int(self::$level)) {
+            $levelName = strtoupper(self::$level);
+            foreach (self::$levels as $key => $value) {
+                if ($value === $levelName) {
+                    self::$level = $key;
+                    break;
+                }
+            }
+        }
     }
 
     public static function emergency($message, array $context = null)
