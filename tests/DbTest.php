@@ -32,6 +32,15 @@ class DbTest extends PHPUnit_Framework_TestCase
         self::assertTrue(is_array(Db::getRow('SELECT * FROM user WHERE username = ?', 'johndoe')));
     }
 
+    public function testGetValue()
+    {
+        self::assertTrue(Db::getValue('SELECT username FROM user WHERE username = ?', 'johndoe') === 'johndoe');
+        self::assertTrue(Db::getValue('SELECT username FROM user WHERE id = 0') === null);
+
+        self::assertTrue(Db::getValue('SELECT COUNT(1) FROM user WHERE username = ?', 'johndoe') === 1);
+        self::assertTrue(Db::getValue('SELECT COUNT(1) FROM user WHERE id = 0') === 0);
+    }
+
     public function testTransaction()
     {
         try {

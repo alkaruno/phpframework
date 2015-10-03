@@ -33,7 +33,11 @@ class Db
         $statement = self::internalQuery($sql, self::getValues($values, $args));
         $value = $statement->fetchColumn();
 
-        return $value !== false ? $value : null;
+        if ($value === false) {
+            return null;
+        }
+
+        return filter_var($value, FILTER_VALIDATE_INT) !== false ? (int)$value : $value;
     }
 
     public static function getRow($sql, $values = null)
@@ -123,8 +127,8 @@ class Db
 
     public static function transaction(\Closure $callback)
     {
+        self::begin();
         try {
-            self::begin();
             $result = $callback();
             self::commit();
         } catch (\Exception $e) {
@@ -179,7 +183,7 @@ class Db
                 $type = PDO::PARAM_INT;
             } elseif (is_bool($value)) {
                 $type = PDO::PARAM_BOOL;
-            } elseif (is_null($value)) {
+            } elseif ($value === null) {
                 $type = PDO::PARAM_NULL;
             } else {
                 $type = PDO::PARAM_STR;
