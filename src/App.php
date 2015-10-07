@@ -151,7 +151,7 @@ class App
             }
         }
 
-        throw new \HttpUrlException("Page not found for URI: $input", 404);
+        throw new \LogicException("Page not found for URI: $input", 404);
     }
 
     public static function loadConfig($name)
