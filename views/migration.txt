@@ -1,0 +1,11 @@
+<?php
+
+use Xplosio\PhpFramework\Db;
+use Xplosio\PhpFramework\Migration;
+
+class {{className}} extends Migration
+{
+    public function migrate()
+    {
+    }
+}
