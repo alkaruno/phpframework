@@ -40,7 +40,7 @@ class App
         if (substr($controller, -10) !== 'Controller') {
             $controller .= 'Controller';
         }
-        $class = $controller[0] === '\\' ? $controller : '\\app\\controllers\\' . $controller;
+        $class = substr($controller, 0, 4) === 'app\\' ? $controller : '\\app\\controllers\\' . $controller;
 
         $view = call_user_func_array([new $class(self::$request), $method], $params);
         $this->parseControllerResult($view, self::$request);
