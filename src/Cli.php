@@ -13,7 +13,7 @@ class Cli
             try {
                 call_user_func([$this, $command], $args);
             } catch (\Exception $e) {
-                print $e->getMessage() . PHP;
+                print $e->getMessage() . PHP_EOL;
                 print $e->getTraceAsString() . PHP_EOL;
             }
         } else {
@@ -23,12 +23,12 @@ class Cli
 
     private function migration($args)
     {
-        if (count($args) == 0) {
+        if (count($args) === 0) {
             (new Schema())->migrate();
             return;
         }
 
-        if ($args[0] == 'create' && count($args) == 2) {
+        if ($args[0] === 'create' && count($args) === 2) {
 
             $className = String::toCamelCase($args[1], true) . 'Migration';
             $fileName = sprintf('%s__%s.php', date('Ymd_His'), String::toSnakeCase($args[1]));
