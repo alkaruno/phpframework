@@ -9,9 +9,9 @@ class Cookie
         return array_key_exists($name, $_COOKIE) ? $_COOKIE[$name] : $default;
     }
 
-    public static function set($name, $value, $period, $path = '/', $domain = null, $secure = null)
+    public static function set($name, $value, $period, $path = '/', $domain = null, $secure = true, $httpOnly = true)
     {
-        setcookie($name, $value, time() + $period, $path, $domain, $secure);
+        setcookie($name, $value, time() + $period, $path, $domain, $secure, $httpOnly);
     }
 
     public static function remove($name)
