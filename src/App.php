@@ -2,7 +2,7 @@
 
 namespace Xplosio\PhpFramework;
 
-use Smarty;
+use Xplosio\PhpFramework\View\AbstractViewRenderer;
 
 class App
 {
@@ -24,10 +24,6 @@ class App
 
         if (array_key_exists('db', self::$config)) {
             Db::__init(self::$config['db']);
-        }
-
-        if (function_exists('app_filter')) {
-            app_filter(self::$request);
         }
 
         if (array_key_exists('filter', self::$config) && is_callable(self::$config['filter'])) {
@@ -81,39 +77,23 @@ class App
         }
 
         if ($view !== null) {
-            self::showView($view, $request->getData());
+            self::render($view, $request->getData());
         }
     }
 
-    public static function showView($view, $data = [], $return = false)
+    public static function render($view, array $data = [], $return = false)
     {
-        $viewsPath = isset(self::$config['views_path']) ? self::$config['views_path'] : '../app/views';
+        $return === false || ob_start();
 
-        $info = pathinfo($view);
+        $viewsPath = self::getConfigValue(['views', 'views_path'], '../app/views');
 
-        if ($return) {
-            ob_start();
-        }
+        $extension = pathinfo($view)['extension'];
 
-        switch ($info['extension']) {
+        switch ($extension) {
 
             case 'php':
                 extract($data);
-                include $viewsPath . '/' . $view;
-                break;
-
-            case 'tpl':
-
-                $viewsCachePath = isset(self::$config['views_cache_path']) ? self::$config['views_cache_path'] : '../app/cache/views';
-
-                $smarty = new Smarty();
-                $smarty->muteExpectedErrors();
-                $smarty->setTemplateDir($viewsPath);
-                $smarty->setCompileDir($viewsCachePath);
-                $smarty->addPluginsDir(self::$folder . '/smarty');
-                $smarty->addPluginsDir('../app/helpers/smarty');
-                $smarty->assign($data);
-                $smarty->display($view);
+                include $viewsPath . DIRECTORY_SEPARATOR . $view;
                 break;
 
             case 'json':
@@ -121,14 +101,21 @@ class App
                 break;
 
             default:
+                $renderers = (array)self::getConfigValue(['views', 'renderers'], []);
+                if (array_key_exists($extension, $renderers)) {
+                    $options = $renderers[$extension];
+                    $className = '\\' . $options['class'];
+                    /** @var AbstractViewRenderer $renderer */
+                    $cachePath = App::getConfigValue(['views', 'cache_path'], $viewsPath . '/cache');
+                    $renderer = new $className($viewsPath, $cachePath, $options);
+                    $renderer->render($view, $data);
+                    break;
+                }
+
                 throw new \InvalidArgumentException('Illegal view type', 500);
         }
 
-        if ($return) {
-            return ob_get_clean();
-        }
-
-        return null;
+        return $return ? ob_get_clean() : null;
     }
 
     public static function route($input, $routes)
@@ -163,19 +150,6 @@ class App
         return self::$config[$name];
     }
 
-    /**
-     * @deprecated use composer packages
-     */
-    public static function loadPackage($name)
-    {
-        require "../app/packages/$name/autoload.php";
-
-        $configFilename = "../app/config/$name.php";
-        if (file_exists($configFilename)) {
-            self::$config[$name] = include($configFilename);
-        }
-    }
-
     public static function errorHandler()
     {
         $args = func_get_args();
@@ -186,19 +160,19 @@ class App
         }
     }
 
-    public static function getConfigValue($key, $default = null)
+    public static function getConfigValue($key, $default = null, array $config = null)
     {
         $key = (array)$key;
+        $config = $config ?: self::$config;
 
-        $array = App::$config;
         $lastKey = array_pop($key);
         foreach ($key as $keyPart) {
-            $array = array_key_exists($keyPart, $array) ? $array[$keyPart] : null;
-            if ($array === null) {
+            $config = array_key_exists($keyPart, $config) ? $config[$keyPart] : null;
+            if ($config === null) {
                 return $default;
             }
         }
 
-        return array_key_exists($lastKey, $array) ? $array[$lastKey] : $default;
+        return array_key_exists($lastKey, $config) ? $config[$lastKey] : $default;
     }
 }
