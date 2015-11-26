@@ -2,14 +2,17 @@
 
 namespace Xplosio\PhpFramework;
 
-use Xplosio\PhpFramework\App;
-use Xplosio\PhpFramework\Logger;
+use Swift_Attachment;
+use Swift_Mailer;
+use Swift_MailTransport;
+use Swift_Message;
 
 class Mailer
 {
     private $subject;
     private $address;
-    private $sender;
+    private $from;
+    private $replyTo;
 
     private $template;
     private $text;
@@ -35,9 +38,9 @@ class Mailer
         return $this;
     }
 
-    public function setSender($sender)
+    public function setFrom($from)
     {
-        $this->sender = $sender;
+        $this->from = $from;
         return $this;
     }
 
@@ -69,27 +72,24 @@ class Mailer
 
     public function send()
     {
-        // TODO переписать и добавить работу с аттачами
-
-        $headers = "MIME-Version: 1.0\n";
-        $headers .= "Content-type: text/html; charset=utf-8\n";
-
-        if ($this->sender != null) {
-            $headers .= "From: " . $this->sender . "\n";
-        }
-
-        if ($this->template != null) {
-            ob_start();
-            App::showView($this->template, $this->values);
-            $text = ob_get_clean();
+        if ($this->template !== null) {
+            $body = App::render($this->template, $this->values, true);
         } else {
-            $text = $this->text;
+            $body = $this->text;
         }
 
-        if (function_exists('mail')) {
-            mail($this->address, $this->subject, $text, $headers);
-        } else {
-            Logger::info("Send mail: {$this->address}, subject: {$this->subject}, text:\n{$text}");
+        $message = new Swift_Message($this->subject, $body, 'text/html', 'UTF-8');
+        $message->setFrom($this->from);
+        if ($this->replyTo !== null) {
+            $message->setReplyTo($this->replyTo);
         }
+
+        foreach ($this->attachments as $filename) {
+            $message->attach(Swift_Attachment::fromPath($filename));
+        }
+
+        $message->setTo($this->address);
+
+        Swift_Mailer::newInstance(Swift_MailTransport::newInstance())->send($message);
     }
 }
