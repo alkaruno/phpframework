@@ -45,7 +45,7 @@ class UserModel extends Model
     public $firstName;
     private $lastName;
 
-    protected function getValidator()
+    protected function getValidator($scenario)
     {
         $validator = new Validator();
         $validator->add('username')->required('Fill a username');

@@ -2,7 +2,7 @@
 
 namespace Xplosio\PhpFramework;
 
-class Model
+abstract class Model
 {
     private $errors;
 
@@ -31,9 +31,9 @@ class Model
         return false;
     }
 
-    public function validate()
+    public function validate($scenario = null)
     {
-        $validator = $this->getValidator();
+        $validator = $this->getValidator($scenario);
         if ($validator === null) {
             return true;
         }
@@ -47,9 +47,9 @@ class Model
         return false;
     }
 
-    public function loadFromPostAndValidate()
+    public function loadFromPostAndValidate($scenario = null)
     {
-        return $this->loadFromPost() && $this->validate();
+        return $this->loadFromPost() && $this->validate($scenario);
     }
 
     public function getErrors()
@@ -58,10 +58,8 @@ class Model
     }
 
     /**
+     * @param null $scenario
      * @return Validator
      */
-    protected function getValidator()
-    {
-        return null;
-    }
+    abstract protected function getValidator($scenario);
 }
