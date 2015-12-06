@@ -7,10 +7,7 @@ class RenderersTest extends PHPUnit_Framework_TestCase
     public static function setUpBeforeClass()
     {
         require '../vendor/autoload.php';
-    }
 
-    protected function setUp()
-    {
         App::$config = [
             'views' => [
                 'renderers' => [
