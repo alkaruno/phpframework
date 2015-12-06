@@ -10,9 +10,9 @@ class Error
     {
         $args = func_get_args();
 
-        if (count($args) == 5) {
+        if (count($args) === 5) {
             list($code, $text, $file, $line, $info) = $args;
-            $info = null;
+            $info = null; // FIXME
             if (is_array($info)) {
                 $info = print_r($info, true);
             }
@@ -29,12 +29,12 @@ class Error
             $info = $e->getTraceAsString();
         }
 
-        $errors = array(
+        $errors = [
             401 => 'Unauthorized',
             403 => 'Forbidden',
             404 => 'Not Found',
             500 => 'Internal Server Error'
-        );
+        ];
 
         if (!isset($errors[$code])) {
             $code = 500;
@@ -45,7 +45,7 @@ class Error
         }
 
         $message = "{$code} {$text} {$file}:{$line}";
-        if ($info != null) {
+        if ($info !== null) {
             $message .= "\n{$info}";
         }
 
@@ -53,7 +53,7 @@ class Error
             'code' => $code,
             'title' => $errors[$code],
             'message' => $message,
-            'debug' => isset(App::$config['env']['debug']) && App::$config['env']['debug']
+            'debug' => isset(App::$config['debug']) && App::$config['debug']
         );
 
         Logger::error($message);
@@ -64,7 +64,7 @@ class Error
             foreach ($data as $key => $value) {
                 $request->set($key, $value);
             }
-            App::showView(App::$config['errorView'], $request->getData());
+            App::render(App::$config['errorView'], $request->getAttributes());
         } else {
             extract($data);
             include App::$folder . '/views/error.php';
