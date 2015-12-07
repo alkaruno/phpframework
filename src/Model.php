@@ -12,10 +12,12 @@ abstract class Model
         foreach ($class->getProperties() as $property) {
             if (!$property->isStatic()) {
                 $name = String::toSnakeCase($property->getName());
-                $value = is_string($data[$name]) ? trim($data[$name]) : $data[$name];
-                $property->setAccessible(true);
-                if (!empty($data[$name])) {
-                    $property->setValue($this, $value);
+                if (array_key_exists($name, $data)) {
+                    $value = is_string($data[$name]) ? trim($data[$name]) : $data[$name];
+                    if (!empty($data[$name])) {
+                        $property->setAccessible(true);
+                        $property->setValue($this, $value);
+                    }
                 }
             }
         }
