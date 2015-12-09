@@ -4,59 +4,37 @@ namespace Xplosio\PhpFramework;
 
 class Request
 {
-    const FLASH_MESSAGE_ATTRIBUTE = 'framework.flash_message';
+    const FLASH_MESSAGE_ATTRIBUTE = 'request.flash_message';
 
     private $uri;
-    private $data;
+    private static $attributes;
 
     public function __construct()
     {
         $data = parse_url($_SERVER['REQUEST_URI']);
         $this->uri = $data['path'];
-
-        $GLOBALS['app']['errors'] = array();
     }
 
-    public function set($name, $value)
+    public static function set($name, $value)
     {
-        $this->data[$name] = $value;
+        self::$attributes[$name] = $value;
     }
 
-    public function get($name)
+    public static function get($name, $default = null)
     {
-        return isset($this->data[$name]) ? $this->data[$name] : null;
+        return array_key_exists($name, self::$attributes) ? self::$attributes[$name] : $default;
     }
 
-    public function getData()
+    public static function getAttributes()
     {
-        return $this->data;
+        return self::$attributes;
     }
+
+    // old
 
     public function getMethod()
     {
         return $_SERVER['REQUEST_METHOD'];
-    }
-
-    public function addError($field, $error)
-    {
-        $GLOBALS['app']['errors'][$field] = $error; // TODO некрасиво надо складывать в реквест по хитрому полю
-    }
-
-    public function addErrors($errors)
-    {
-        foreach ($errors as $field => $error) {
-            $this->addError($field, $error);
-        }
-    }
-
-    public function hasErrors()
-    {
-        return count($GLOBALS['app']['errors']) > 0;
-    }
-
-    public function getErrors()
-    {
-        return $this->hasErrors() ? $GLOBALS['app']['errors'] : NULL;
     }
 
     public function getUri()
@@ -83,19 +61,16 @@ class Request
         return $message;
     }
 
-    public function getParameter($name, $default = null)
-    {
-        return array_key_exists($name, $_GET) ? $_GET[$name] : $default;
-    }
-
-    public function postParameter($name, $default = null)
-    {
-        return array_key_exists($name, $_POST) ? $_POST[$name] : $default;
-    }
-
-    public static function getParam($name, $default = null)
+    public static function getParameter($name, $default = null)
     {
         return array_key_exists($name, $_REQUEST) ? $_REQUEST[$name] : $default;
+    }
+
+    public static function getParameters(...$names)
+    {
+        return array_map(function ($name) {
+            return self::getParameter($name);
+        }, $names);
     }
 
     public static function isGet()
@@ -113,4 +88,3 @@ class Request
         return strtoupper($_SERVER['REQUEST_METHOD']) === strtoupper($method);
     }
 }
-
