@@ -59,7 +59,7 @@ class Error
         $viewsPath = App::getConfigValue(['views', 'views_path'], '../app/views');
 
         if ($errorView !== null && is_readable($viewsPath . DIRECTORY_SEPARATOR . $errorView)) {
-            App::render(App::$config['errorView'], $data);
+            App::render($errorView, $data);
         } else {
             extract($data);
             include App::$folder . '/views/error.php';
