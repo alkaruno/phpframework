@@ -33,7 +33,7 @@ class Error
             500 => 'Internal Server Error'
         ];
 
-        if (array_key_exists($code, $errors)) {
+        if (!array_key_exists($code, $errors)) {
             $code = 500;
         }
 
