@@ -77,7 +77,7 @@ class App
         }
 
         if ($view !== null) {
-            self::render($view, $request->getData());
+            self::render($view, $request->getAttributes());
         }
     }
 
@@ -86,7 +86,6 @@ class App
         $return === false || ob_start();
 
         $viewsPath = self::getConfigValue(['views', 'views_path'], '../app/views');
-
         $extension = pathinfo($view)['extension'];
 
         switch ($extension) {
@@ -97,6 +96,7 @@ class App
                 break;
 
             case 'json':
+                header('Content-type: application/json');
                 echo json_encode($data);
                 break;
 

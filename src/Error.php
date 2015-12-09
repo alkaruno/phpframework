@@ -12,15 +12,12 @@ class Error
 
         if (count($args) === 5) {
             list($code, $text, $file, $line, $info) = $args;
-            $info = null; // FIXME
             if (is_array($info)) {
                 $info = print_r($info, true);
             }
             $code = 500;
         } else {
-            /**
-             * @var Exception $e
-             */
+            /** @var Exception $e */
             $e = $args[0];
             $code = $e->getCode();
             $text = $e->getMessage();
@@ -36,12 +33,12 @@ class Error
             500 => 'Internal Server Error'
         ];
 
-        if (!isset($errors[$code])) {
+        if (array_key_exists($code, $errors)) {
             $code = 500;
         }
 
         if (!headers_sent()) {
-            header('HTTP/1.1 ' . isset($errors[$code]) ? $errors[$code] : '', true, $code);
+            header('HTTP/1.1 ' . $errors[$code], true, $code);
         }
 
         $message = "{$code} {$text} {$file}:{$line}";
@@ -49,22 +46,20 @@ class Error
             $message .= "\n{$info}";
         }
 
-        $data = array(
+        Logger::error($message);
+
+        $data = [
             'code' => $code,
             'title' => $errors[$code],
             'message' => $message,
-            'debug' => isset(App::$config['debug']) && App::$config['debug']
-        );
+            'debug' => App::getConfigValue('debug', false)
+        ];
 
-        Logger::error($message);
+        $errorView = App::getConfigValue(['views', 'error'], null);
+        $viewsPath = App::getConfigValue(['views', 'views_path'], '../app/views');
 
-        if (isset(App::$config['errorView']) && is_readable(App::$config['views_path'] . DIRECTORY_SEPARATOR . App::$config['errorView'])) {
-            /** @var $request Request */
-            $request = App::$request;
-            foreach ($data as $key => $value) {
-                $request->set($key, $value);
-            }
-            App::render(App::$config['errorView'], $request->getAttributes());
+        if ($errorView !== null && is_readable($viewsPath . DIRECTORY_SEPARATOR . $errorView)) {
+            App::render(App::$config['errorView'], $data);
         } else {
             extract($data);
             include App::$folder . '/views/error.php';
