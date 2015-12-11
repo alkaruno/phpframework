@@ -6,13 +6,23 @@ class Request
 {
     const FLASH_MESSAGE_ATTRIBUTE = 'request.flash_message';
 
-    private $uri;
+    private static $uri;
     private static $attributes;
 
     public function __construct()
     {
         $data = parse_url($_SERVER['REQUEST_URI']);
-        $this->uri = $data['path'];
+        self::$uri = $data['path'];
+    }
+
+    public static function getUri()
+    {
+        return self::$uri;
+    }
+
+    public static function setUri($uri)
+    {
+        self::$uri = $uri;
     }
 
     public static function set($name, $value)
@@ -30,35 +40,19 @@ class Request
         return self::$attributes;
     }
 
-    // old
-
-    public function getMethod()
+    public static function isMethod($method)
     {
-        return $_SERVER['REQUEST_METHOD'];
+        return strtoupper($_SERVER['REQUEST_METHOD']) === strtoupper($method);
     }
 
-    public function getUri()
+    public static function isMethodPost()
     {
-        return $this->uri;
+        return self::isMethod('POST');
     }
 
-    public function setUri($uri)
+    public static function isMethodGet()
     {
-        $this->uri = $uri;
-    }
-
-    public function setFlashMessage($message)
-    {
-        Session::set(self::FLASH_MESSAGE_ATTRIBUTE, $message);
-    }
-
-    public function getFlashMessage()
-    {
-        $message = Session::get(self::FLASH_MESSAGE_ATTRIBUTE);
-        if ($message !== null) {
-            Session::remove(self::FLASH_MESSAGE_ATTRIBUTE);
-        }
-        return $message;
+        return self::isMethod('GET');
     }
 
     public static function getParameter($name, $default = null)
@@ -73,18 +67,29 @@ class Request
         }, $names);
     }
 
+    public static function setFlashMessage($message)
+    {
+        Session::set(self::FLASH_MESSAGE_ATTRIBUTE, $message);
+    }
+
+    public static function getFlashMessage()
+    {
+        $message = Session::get(self::FLASH_MESSAGE_ATTRIBUTE);
+        if ($message !== null) {
+            Session::remove(self::FLASH_MESSAGE_ATTRIBUTE);
+        }
+        return $message;
+    }
+
+    /** @deprecated */
     public static function isGet()
     {
         return self::isMethod('GET');
     }
 
+    /** @deprecated */
     public static function isPost()
     {
         return self::isMethod('POST');
-    }
-
-    public static function isMethod($method)
-    {
-        return strtoupper($_SERVER['REQUEST_METHOD']) === strtoupper($method);
     }
 }
