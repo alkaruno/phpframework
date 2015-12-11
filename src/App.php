@@ -96,7 +96,9 @@ class App
                 break;
 
             case 'json':
-                header('Content-type: application/json');
+                if (!headers_sent()) {
+                    header('Content-type: application/json');
+                }
                 echo json_encode($data);
                 break;
 
