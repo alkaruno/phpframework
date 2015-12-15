@@ -15,12 +15,14 @@ class Schema
             return $row['version'];
         }, Db::getRows('SELECT version FROM migration'));
 
-        $fileNames = $this->getMigrationsFiles();
-
-        foreach (array_diff($fileNames, $versions) as $fileName) {
-            $migration = $this->getMigration($fileName);
-            Db::transaction(function () use ($migration, $fileName) {
-                $migration->migrate();
+        foreach (array_diff($this->getMigrationsFiles(), $versions) as $fileName) {
+            Db::transaction(function () use ($fileName) {
+                if (String::endsWith($fileName, '.php')) {
+                    $migration = $this->getMigration($fileName);
+                    $migration->migrate();
+                } elseif (String::endsWith($fileName, '.sql')) {
+                    Db::query(file_get_contents("app/migrations/$fileName"));
+                }
                 Db::insert('migration', ['version' => $fileName, 'apply_time' => time()]);
             });
             print 'Applied migration: ' . $fileName . PHP_EOL;
@@ -32,8 +34,8 @@ class Schema
     private function getMigrationsFiles()
     {
         $files = array_map(function ($file) {
-            return str_replace('.php', '', basename($file));
-        }, glob('app/migrations/*.php'));
+            return pathinfo($file, PATHINFO_BASENAME);
+        }, glob('app/migrations/*.{php,sql}', GLOB_BRACE));
 
         sort($files);
 
@@ -46,17 +48,11 @@ class Schema
      */
     private function getMigration($fileName)
     {
-        include "app/migrations/$fileName.php";
-        $className = $this->getClassName($fileName);
+        $classes = get_declared_classes();
+        include "app/migrations/$fileName";
+        $class = array_shift(array_diff(get_declared_classes(), $classes));
 
-        return new $className;
-    }
-
-    private function getClassName($fileName)
-    {
-        Assert::check(count($strings = explode('__', $fileName)) === 2, 'Illegal migration filename');
-
-        return String::toCamelCase($strings[1], true) . 'Migration';
+        return new $class;
     }
 
     private function createMigrationsTableIfNotExists()
