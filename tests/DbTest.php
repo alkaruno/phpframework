@@ -26,6 +26,11 @@ class DbTest extends PHPUnit_Framework_TestCase
         Db::insert('user', ['username' => 'johndoe', 'password' => md5('password'), 'create_date' => date('r')]);
     }
 
+    protected function setUp()
+    {
+        Db::update('DELETE FROM user WHERE username IN (?, ?)', 'test', 'foo');
+    }
+
     public function testGetRow()
     {
         self::assertNull(Db::getRow('SELECT * FROM user WHERE id = ?', 42));
@@ -70,6 +75,20 @@ class DbTest extends PHPUnit_Framework_TestCase
         }
 
         self::assertNotNull(Db::getRow('SELECT * FROM user WHERE username = ?', 'test'));
+    }
+
+    public function testMultipleTransactions()
+    {
+        Db::begin();
+        Db::begin();
+
+        $this->insertTestUser(false);
+
+        Db::commit();
+        Db::commit();
+
+        self::assertNotNull(Db::getRow('SELECT * FROM user WHERE username = ?', 'test'));
+        self::assertNotNull(Db::getRow('SELECT * FROM user WHERE username = ?', 'foo'));
     }
 
     private function insertTestUser($withError)

@@ -14,6 +14,8 @@ class Db
     private static $time = 0;
     private static $logs = [];
 
+    private static $transactionCounter = 0;
+
     const LOG_LIMIT = 100;
 
     public static function __init($config)
@@ -144,17 +146,24 @@ class Db
 
     public static function begin()
     {
-        self::$pdo->beginTransaction();
+        if (self::$transactionCounter++ === 0) {
+            self::$pdo->beginTransaction();
+        }
     }
 
     public static function commit()
     {
-        self::$pdo->commit();
+        if (--self::$transactionCounter === 0) {
+            self::$pdo->commit();
+        }
     }
 
     public static function rollback()
     {
-        self::$pdo->rollBack();
+        if (self::$transactionCounter >= 0) {
+            self::$pdo->rollBack();
+        }
+        self::$transactionCounter = 0;
     }
 
     public static function getTime()
